@@ -5,6 +5,8 @@ import RoleSelection from "./RoleSelection";
 import HospitalRegistration from "./HospitalRegistration";
 import HospitalDashboard from "./HospitalDashboard";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 function App() {
   const [page, setPage] = useState(() => {
     const isLoggedIn = localStorage.getItem("biotrackLoggedIn");
@@ -66,7 +68,7 @@ function App() {
 
       // Send login credentials to backend
       const response = await fetch(
-        "http://localhost:5000/api/auth/login",
+       `${API_URL}/auth/login`,
         {
           method: "POST",
           headers: {
