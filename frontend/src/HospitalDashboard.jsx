@@ -156,6 +156,32 @@ function HospitalDashboard() {
       <div className="mobile-quick-actions">
         <button
           type="button"
+          className="mobile-profile-btn"
+          onClick={() => setIsAccountOpen((prev) => !prev)}
+          aria-label="Open profile menu"
+          aria-expanded={isAccountOpen}
+        >
+          <span className="mobile-profile-avatar">
+            {adminName.charAt(0).toUpperCase()}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          className="mobile-notification-btn"
+          onClick={() => {
+            setActiveMenu("Alerts");
+            setIsAccountOpen(false);
+          }}
+          aria-label="View alerts"
+          title="Alerts"
+        >
+          <span>🔔</span>
+          <span className="mobile-notification-dot">3</span>
+        </button>
+
+        <button
+          type="button"
           className="mobile-night-btn"
           onClick={() => setIsNightMode((prev) => !prev)}
           aria-label={isNightMode ? "Turn off night mode" : "Turn on night mode"}
@@ -164,28 +190,54 @@ function HospitalDashboard() {
           <span>{isNightMode ? "☀" : "☾"}</span>
         </button>
 
-        <button
-          type="button"
-          className="mobile-logout-btn"
-          onClick={handleLogout}
-          aria-label="Logout"
-          title="Logout"
-        >
-          <span className="mobile-logout-icon">↪</span>
-          <span>Logout</span>
-        </button>
+        {isAccountOpen && (
+          <div className="mobile-account-menu" role="menu">
+            <div className="account-menu-user">
+              <div className="account-menu-avatar">
+                {adminName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <strong>{adminName}</strong>
+                <span>{hospitalEmail}</span>
+              </div>
+            </div>
+
+            <div className="account-menu-divider" />
+
+            <button
+              type="button"
+              className="account-menu-item"
+              onClick={() => handleAccountAction("profile")}
+              role="menuitem"
+            >
+              <span>◉</span>
+              <span>Profile</span>
+            </button>
+
+            <button
+              type="button"
+              className="account-menu-item"
+              onClick={() => handleAccountAction("settings")}
+              role="menuitem"
+            >
+              <span>⚙</span>
+              <span>Settings</span>
+            </button>
+
+            <button
+              type="button"
+              className="account-menu-item danger"
+              onClick={() => handleAccountAction("logout")}
+              role="menuitem"
+            >
+              <span>↪</span>
+              <span>Logout</span>
+            </button>
+          </div>
+        )}
       </div>
 
       <aside className={`dashboard-sidebar ${isSidebarOpen ? "sidebar-open" : ""}`}>
-
-        <button
-          type="button"
-          className="mobile-sidebar-close"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-label="Close navigation menu"
-        >
-          ×
-        </button>
 
         <div className="dashboard-logo">
           <div className="dashboard-logo-icon">+</div>
