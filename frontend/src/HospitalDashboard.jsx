@@ -2,22 +2,8 @@ import { useState } from "react";
 import "./HospitalDashboard.css";
 import AIDetection from "./AIDetection";
 import WasteManagement from "./WasteManagement";
-import CollectionSectionAPI from "./CollectionSection";
-import TrackingSectionAPI from "./TrackingSection";
-import AnalyticsSectionAPI from "./AnalyticsSection";
-import AlertsSectionAPI from "./AlertsSection";
-
 function HospitalDashboard() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAccountOpen, setIsAccountOpen] = useState(false);
-  const [isNightMode, setIsNightMode] = useState(false);
-
-  const handleMenuChange = (menu) => {
-    setActiveMenu(menu);
-    setIsSidebarOpen(false);
-    setIsAccountOpen(false);
-  };
 
   // Get hospital information saved during registration
   const savedHospital = localStorage.getItem("biotrackHospital");
@@ -56,30 +42,8 @@ function HospitalDashboard() {
 
         const handleLogout = () => {
         localStorage.removeItem("biotrackLoggedIn");
-        localStorage.removeItem("biotrackToken");
-        localStorage.removeItem("biotrackHospital");
         window.location.reload();
         };
-
-  const handleAccountAction = (action) => {
-    setIsAccountOpen(false);
-
-    if (action === "profile") {
-      setActiveMenu("Profile");
-      setIsSidebarOpen(false);
-      return;
-    }
-
-    if (action === "settings") {
-      setActiveMenu("Settings");
-      setIsSidebarOpen(false);
-      return;
-    }
-
-    if (action === "logout") {
-      handleLogout();
-    }
-  };
 
   const renderContent = () => {
     switch (activeMenu) {
@@ -90,25 +54,16 @@ function HospitalDashboard() {
         return <WasteManagement />;
 
       case "Collection":
-        return <CollectionSectionAPI />;
+        return <CollectionSection />;
 
       case "Tracking":
-        return <TrackingSectionAPI />;
+        return <TrackingSection />;
 
       case "Analytics":
-        return <AnalyticsSectionAPI />;
+        return <AnalyticsSection />;
 
       case "Alerts":
-        return <AlertsSectionAPI />;
-
-      case "Profile":
-        return (
-          <ProfileSection
-            hospitalName={hospitalName}
-            adminName={adminName}
-            hospitalEmail={hospitalEmail}
-          />
-        );
+        return <AlertsSection />;
 
       case "Settings":
         return (
@@ -131,118 +86,13 @@ function HospitalDashboard() {
   };
 
   return (
-    <div className={`dashboard-page ${isNightMode ? "night-mode" : ""}`}>
+    <div className="dashboard-page">
 
       {/* =========================
           SIDEBAR
       ========================== */}
 
-      <button
-        type="button"
-        className={`mobile-menu-btn ${isSidebarOpen ? "open" : ""}`}
-        onClick={() => setIsSidebarOpen((prev) => !prev)}
-        aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
-        aria-expanded={isSidebarOpen}
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
-      {isSidebarOpen && (
-        <button
-          type="button"
-          className="mobile-menu-overlay"
-          onClick={() => setIsSidebarOpen(false)}
-          aria-label="Close menu"
-        />
-      )}
-
-      <div className="mobile-quick-actions">
-        <button
-          type="button"
-          className="mobile-profile-btn"
-          onClick={() => setIsAccountOpen((prev) => !prev)}
-          aria-label="Open profile menu"
-          aria-expanded={isAccountOpen}
-        >
-          <span className="mobile-profile-avatar">
-            {adminName.charAt(0).toUpperCase()}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          className="mobile-notification-btn"
-          onClick={() => {
-            setActiveMenu("Alerts");
-            setIsAccountOpen(false);
-          }}
-          aria-label="View alerts"
-          title="Alerts"
-        >
-          <span>🔔</span>
-          <span className="mobile-notification-dot">3</span>
-        </button>
-
-        <button
-          type="button"
-          className="mobile-night-btn"
-          onClick={() => setIsNightMode((prev) => !prev)}
-          aria-label={isNightMode ? "Turn off night mode" : "Turn on night mode"}
-          title={isNightMode ? "Light mode" : "Night mode"}
-        >
-          <span>{isNightMode ? "☀" : "☾"}</span>
-        </button>
-
-        {isAccountOpen && (
-          <div className="mobile-account-menu" role="menu">
-            <div className="account-menu-user">
-              <div className="account-menu-avatar">
-                {adminName.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <strong>{adminName}</strong>
-                <span>{hospitalEmail}</span>
-              </div>
-            </div>
-
-            <div className="account-menu-divider" />
-
-            <button
-              type="button"
-              className="account-menu-item"
-              onClick={() => handleAccountAction("profile")}
-              role="menuitem"
-            >
-              <span>◉</span>
-              <span>Profile</span>
-            </button>
-
-            <button
-              type="button"
-              className="account-menu-item"
-              onClick={() => handleAccountAction("settings")}
-              role="menuitem"
-            >
-              <span>⚙</span>
-              <span>Settings</span>
-            </button>
-
-            <button
-              type="button"
-              className="account-menu-item danger"
-              onClick={() => handleAccountAction("logout")}
-              role="menuitem"
-            >
-              <span>↪</span>
-              <span>Logout</span>
-            </button>
-          </div>
-        )}
-      </div>
-
-      <aside className={`dashboard-sidebar ${isSidebarOpen ? "sidebar-open" : ""}`}>
+      <aside className="dashboard-sidebar">
 
         <div className="dashboard-logo">
           <div className="dashboard-logo-icon">+</div>
@@ -279,7 +129,7 @@ function HospitalDashboard() {
                   ? "nav-item active"
                   : "nav-item"
               }
-              onClick={() => handleMenuChange(item.name)}
+              onClick={() => setActiveMenu(item.name)}
             >
               <span className="nav-icon">{item.icon}</span>
 
@@ -302,7 +152,7 @@ function HospitalDashboard() {
                 ? "nav-item active"
                 : "nav-item"
             }
-            onClick={() => handleMenuChange("Settings")}
+            onClick={() => setActiveMenu("Settings")}
           >
             <span className="nav-icon">⚙</span>
             <span>Settings</span>
@@ -383,14 +233,11 @@ function HospitalDashboard() {
               <span></span>
             </button>
 
-            <div className="user-account-wrapper">
-              <button
-                type="button"
-                className={`user-profile ${isAccountOpen ? "account-open" : ""}`}
-                onClick={() => setIsAccountOpen((prev) => !prev)}
-                aria-haspopup="menu"
-                aria-expanded={isAccountOpen}
-              >
+            <button
+              type="button"
+              className="user-profile"
+              onClick={() => setActiveMenu("Settings")}
+            >
               <div className="user-avatar">
                 {adminName.charAt(0).toUpperCase()}
               </div>
@@ -400,64 +247,8 @@ function HospitalDashboard() {
                 <span>{hospitalEmail}</span>
               </div>
 
-                <span className="profile-arrow">▾</span>
-              </button>
-
-              {isAccountOpen && (
-                <>
-                  <button
-                    type="button"
-                    className="account-menu-backdrop"
-                    onClick={() => setIsAccountOpen(false)}
-                    aria-label="Close account menu"
-                  />
-
-                  <div className="account-menu" role="menu">
-                    <div className="account-menu-user">
-                      <div className="account-menu-avatar">
-                        {adminName.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <strong>{adminName}</strong>
-                        <span>{hospitalEmail}</span>
-                      </div>
-                    </div>
-
-                    <div className="account-menu-divider" />
-
-                    <button
-                      type="button"
-                      className="account-menu-item"
-                      onClick={() => handleAccountAction("profile")}
-                      role="menuitem"
-                    >
-                      <span>◉</span>
-                      <span>Profile</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className="account-menu-item"
-                      onClick={() => handleAccountAction("settings")}
-                      role="menuitem"
-                    >
-                      <span>⚙</span>
-                      <span>Settings</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      className="account-menu-item danger"
-                      onClick={() => handleAccountAction("logout")}
-                      role="menuitem"
-                    >
-                      <span>↪</span>
-                      <span>Logout</span>
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+              <span className="profile-arrow">▾</span>
+            </button>
 
           </div>
 
@@ -1830,53 +1621,6 @@ function AlertsSection() {
 
       </div>
 
-    </div>
-  );
-}
-
-
-function ProfileSection({
-  hospitalName,
-  adminName,
-  hospitalEmail,
-}) {
-  return (
-    <div className="module-page profile-page">
-      <div className="module-header">
-        <div>
-          <span className="panel-label">ACCOUNT</span>
-          <h2>My Profile</h2>
-          <p>View your hospital account information.</p>
-        </div>
-      </div>
-
-      <div className="profile-grid">
-        <div className="panel profile-card-main">
-          <div className="profile-large-avatar">
-            {adminName.charAt(0).toUpperCase()}
-          </div>
-          <div className="profile-main-info">
-            <h3>{adminName}</h3>
-            <p>Hospital Staff</p>
-            <span>{hospitalEmail}</span>
-          </div>
-        </div>
-
-        <div className="panel profile-details-card">
-          <div className="profile-detail-row">
-            <span>Hospital</span>
-            <strong>{hospitalName}</strong>
-          </div>
-          <div className="profile-detail-row">
-            <span>Role</span>
-            <strong>Hospital Staff</strong>
-          </div>
-          <div className="profile-detail-row">
-            <span>Email</span>
-            <strong>{hospitalEmail}</strong>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

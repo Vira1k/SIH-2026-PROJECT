@@ -135,6 +135,20 @@ function AlertsSection() {
   const [filter, setFilter] = useState("All");
 
   const [alerts, setAlerts] = useState([]);
+  useEffect(() => {
+  const unreadCount = alerts.filter(
+    (alert) => !alert.read
+  ).length;
+
+  localStorage.setItem(
+    "biotrackAlertUnreadCount",
+    String(unreadCount)
+  );
+
+  window.dispatchEvent(
+    new CustomEvent("biotrack-alert-count-updated")
+  );
+}, [alerts]);
 
   const [loading, setLoading] = useState(true);
 
