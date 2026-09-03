@@ -2,6 +2,8 @@ import { useState } from "react";
 import "./HospitalDashboard.css";
 import AIDetection from "./AIDetection";
 import WasteManagement from "./WasteManagement";
+import CollectionSection from "./CollectionSection";
+
 function HospitalDashboard() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

@@ -1,0 +1,200 @@
+/* Collection module additions.
+   These classes are intentionally scoped to the Collection page and can be
+   appended to HospitalDashboard.css. */
+
+.module-message {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin: 0 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.error-message {
+  background: #fff1f2;
+  color: #b42318;
+  border: 1px solid #fecdd3;
+}
+
+.success-message {
+  background: #ecfdf3;
+  color: #027a48;
+  border: 1px solid #abefc6;
+}
+
+.collection-form {
+  display: block;
+  padding: 22px;
+}
+
+.collection-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.collection-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.collection-form-grid input,
+.collection-form-grid select {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: #fff;
+  color: #101828;
+  font: inherit;
+  outline: none;
+}
+
+.collection-form-grid input:focus,
+.collection-form-grid select:focus {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.1);
+}
+
+.collection-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.secondary-action,
+.small-action,
+.small-danger {
+  border: 0;
+  border-radius: 9px;
+  padding: 9px 13px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.secondary-action {
+  background: #f2f4f7;
+  color: #344054;
+}
+
+.small-action {
+  background: #eaf2ff;
+  color: #175cd3;
+}
+
+.small-danger {
+  background: #fff1f0;
+  color: #b42318;
+}
+
+.secondary-action:disabled,
+.small-action:disabled,
+.small-danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.collection-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  min-width: 120px;
+}
+
+.table-subtext {
+  display: block;
+  margin-top: 3px;
+  color: #667085;
+  font-size: 11px;
+}
+
+.empty-state {
+  padding: 48px 24px;
+  text-align: center;
+  color: #667085;
+}
+
+.empty-state strong {
+  display: block;
+  color: #344054;
+  margin-bottom: 6px;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.form-hint {
+  margin: 14px 0 0;
+  color: #667085;
+  font-size: 12px;
+}
+
+.collection-info-card {
+  margin-top: 18px;
+  padding: 18px 20px;
+  border: 1px solid #eaecf0;
+  border-radius: 14px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+}
+
+.collection-info-card strong {
+  color: #101828;
+}
+
+.collection-info-card p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.collection-info-card > span {
+  white-space: nowrap;
+  color: #667085;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .collection-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .collection-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .collection-form-actions button {
+    width: 100%;
+  }
+
+  .collection-info-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .collection-info-card > span {
+    white-space: normal;
+  }
+
+  .collection-actions {
+    min-width: 0;
+  }
+}
