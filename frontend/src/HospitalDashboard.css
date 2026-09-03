@@ -3173,22 +3173,32 @@ td strong {
   }
 
   .mobile-notification-dot {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 4px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #ff5a63;
-    color: #ffffff;
-    border: 2px solid #ffffff;
-    font-size: 9px;
-    font-weight: 800;
-  }
+  position: absolute;
+  top: 2px;
+  right: 2px;
+
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+
+  border-radius: 999px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #ff5a63;
+  color: #ffffff;
+
+  border: 2px solid #ffffff;
+
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+
+  box-sizing: border-box;
+  z-index: 10;
+}
 
   .mobile-night-btn {
     font-size: 22px;
