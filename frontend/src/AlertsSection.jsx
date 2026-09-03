@@ -136,19 +136,19 @@ function AlertsSection() {
 
   const [alerts, setAlerts] = useState([]);
   useEffect(() => {
-  const unreadCount = alerts.filter(
-    (alert) => !alert.read
-  ).length;
+    const unreadCount = alerts.filter(
+      (alert) => !readAlertIds.includes(alert.id)
+    ).length;
 
-  localStorage.setItem(
-    "biotrackAlertUnreadCount",
-    String(unreadCount)
-  );
+    localStorage.setItem(
+      "biotrackAlertUnreadCount",
+      String(unreadCount)
+    );
 
-  window.dispatchEvent(
-    new CustomEvent("biotrack-alert-count-updated")
-  );
-}, [alerts]);
+    window.dispatchEvent(
+      new CustomEvent("biotrack-alert-count-updated")
+    );
+  }, [alerts, readAlertIds]);
 
   const [loading, setLoading] = useState(true);
 
@@ -449,7 +449,6 @@ function AlertsSection() {
     const allIds = alerts.map((alert) => alert.id);
 
     setReadAlertIds(allIds);
-
     saveReadAlerts(allIds);
   };
 
@@ -459,7 +458,6 @@ function AlertsSection() {
 
   const clearReadHistory = () => {
     setReadAlertIds([]);
-
     saveReadAlerts([]);
   };
 
