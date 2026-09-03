@@ -1,14 +1,22 @@
 const mongoose = require("mongoose");
 
-const wasteRecordSchema = new mongoose.Schema(
+const wasteSchema = new mongoose.Schema(
   {
-    hospitalId: {
+    hospital: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Hospital",
       required: true,
+      index: true,
     },
 
     wasteId: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
+    type: {
       type: String,
       required: true,
       trim: true,
@@ -20,16 +28,16 @@ const wasteRecordSchema = new mongoose.Schema(
       trim: true,
     },
 
-    weight: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-
     bin: {
       type: String,
       required: true,
       enum: ["Yellow", "Red", "White", "Blue"],
+    },
+
+    weight: {
+      type: Number,
+      required: true,
+      min: 0.1,
     },
 
     department: {
@@ -40,13 +48,18 @@ const wasteRecordSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["Pending", "Collected"],
+      enum: ["Pending", "Collected", "Processing", "Disposed"],
       default: "Pending",
     },
 
-    recordedAt: {
-      type: Date,
-      default: Date.now,
+    aiConfidence: {
+      type: Number,
+      default: null,
+    },
+
+    aiDetected: {
+      type: Boolean,
+      default: false,
     },
   },
   {
@@ -54,4 +67,4 @@ const wasteRecordSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("WasteRecord", wasteRecordSchema);
+module.exports = mongoose.model("Waste", wasteSchema);

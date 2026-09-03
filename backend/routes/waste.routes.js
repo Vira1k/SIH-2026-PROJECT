@@ -1,22 +1,27 @@
 const express = require("express");
 
+const protect = require("../middleware/auth.middleware");
+
 const {
+  getWasteRecords,
   createWasteRecord,
-  getHospitalWasteRecords,
-  markWasteCollected,
+  updateWasteStatus,
   deleteWasteRecord,
 } = require("../controllers/waste.controller");
 
 const router = express.Router();
 
-// Add waste record
+// All waste routes require authentication
+router.use(protect);
+
+// Get all waste records for logged-in hospital
+router.get("/", getWasteRecords);
+
+// Create new waste record
 router.post("/", createWasteRecord);
 
-// Get hospital waste records
-router.get("/", getHospitalWasteRecords);
-
-// Mark waste as collected
-router.patch("/:id/collect", markWasteCollected);
+// Update waste status
+router.patch("/:id/status", updateWasteStatus);
 
 // Delete waste record
 router.delete("/:id", deleteWasteRecord);

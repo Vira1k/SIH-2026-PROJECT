@@ -1,590 +1,869 @@
-.registration-page {
-  min-height: 100vh;
-  background: #eef7f8;
-  position: relative;
-  overflow-x: hidden;
-  color: #12343b;
+/* =========================================================
+   BIOTRACK AI — HOSPITAL REGISTRATION
+   PREMIUM MEDICAL AI THEME
+========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+button,
+input,
+select {
+  font-family: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* =========================================================
+   COLOR SYSTEM
+========================================================= */
+
+:root {
+  --navy: #092d3b;
+  --navy-2: #0b3b4b;
+
+  --teal: #0fa3b1;
+  --teal-light: #16b6b2;
+  --teal-soft: #e5f8f8;
+
+  --blue: #2563eb;
+  --blue-soft: #eaf1ff;
+
+  --green: #16a085;
+  --green-soft: #e8f8f2;
+
+  --amber: #f59e0b;
+  --amber-soft: #fff5df;
+
+  --red: #e84d5b;
+
+  --page: #eef8fa;
+  --white: #ffffff;
+
+  --text: #092f40;
+  --text-soft: #587681;
+  --muted: #8199a2;
+
+  --border: #d9eaed;
+}
+
+/* =========================================================
+   PAGE
+========================================================= */
+
+.registration-page {
+  min-height: 100vh;
+  width: 100%;
+
+  position: relative;
+  overflow-x: hidden;
+
+  padding: 30px 45px 35px;
+
+  font-family: "DM Sans", sans-serif;
+
+  color: var(--text);
+
+  background:
+    radial-gradient(
+      circle at 5% 5%,
+      rgba(15, 163, 177, 0.15),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 95% 90%,
+      rgba(37, 99, 235, 0.10),
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      #eef8fa 0%,
+      #f6fbfc 50%,
+      #edf7fa 100%
+    );
+}
+
+/* =========================================================
+   BACKGROUND DECORATION
+========================================================= */
+
 .registration-bg {
-  position: fixed;
+  position: absolute;
   border-radius: 50%;
   pointer-events: none;
+  z-index: 0;
 }
 
 .bg-one {
   width: 500px;
   height: 500px;
-  background: rgba(8, 127, 140, 0.06);
-  top: -250px;
-  left: -180px;
+
+  top: -280px;
+  right: -180px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(15, 163, 177, 0.16),
+      rgba(15, 163, 177, 0.02) 65%,
+      transparent 70%
+    );
 }
 
 .bg-two {
-  width: 450px;
-  height: 450px;
-  background: rgba(23, 136, 165, 0.06);
-  right: -220px;
-  bottom: -220px;
+  width: 430px;
+  height: 430px;
+
+  bottom: -260px;
+  left: -200px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(37, 99, 235, 0.10),
+      rgba(37, 99, 235, 0.02) 65%,
+      transparent 70%
+    );
 }
 
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
 .registration-container {
-  width: min(1120px, 100%);
-  min-height: 100vh;
+  width: min(1280px, 100%);
 
-  margin: auto;
-
-  padding: 30px 35px;
+  margin: 0 auto;
 
   position: relative;
   z-index: 2;
-
-  display: flex;
-  flex-direction: column;
 }
 
-/* =================================
+/* =========================================================
    HEADER
-================================= */
+========================================================= */
 
 .registration-header {
+  min-height: 72px;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  margin-bottom: 34px;
 }
 
+/* Back */
+
 .registration-back {
-  border: none;
-  background: white;
+  border: 1px solid var(--border);
 
-  color: #087f8c;
+  background: rgba(255, 255, 255, 0.82);
 
-  padding: 10px 15px;
+  color: var(--text-soft);
 
-  border-radius: 9px;
+  padding: 10px 17px;
 
-  font-size: 11px;
+  border-radius: 11px;
+
+  font-size: 12px;
   font-weight: 700;
 
-  box-shadow: 0 5px 15px rgba(18, 52, 59, 0.06);
+  transition: 0.25s ease;
+
+  box-shadow: 0 5px 18px rgba(9, 45, 59, 0.04);
 }
 
 .registration-back:hover {
-  background: #f2faf9;
+  color: var(--teal);
+
+  border-color: rgba(15, 163, 177, 0.4);
+
+  background: white;
+
+  transform: translateX(-2px);
 }
+
+/* =========================================================
+   BRAND
+========================================================= */
 
 .registration-brand {
   display: flex;
   align-items: center;
-  gap: 11px;
+
+  gap: 12px;
 }
 
 .registration-logo {
-  width: 43px;
-  height: 43px;
-
-  background: #087f8c;
-
-  color: white;
-
-  border-radius: 12px;
+  width: 47px;
+  height: 47px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 23px;
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--teal),
+      var(--blue)
+    );
+
+  color: white;
+
+  font-size: 27px;
   font-weight: 800;
+
+  box-shadow:
+    0 10px 25px rgba(15, 163, 177, 0.22);
 }
 
 .registration-brand h1 {
-  font-size: 18px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+
+  color: var(--navy);
+
+  font-size: 20px;
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
 }
 
 .registration-brand p {
-  font-size: 8px;
-  color: #84989d;
   margin-top: 3px;
+
+  color: var(--muted);
+
+  font-size: 10px;
 }
+
+/* =========================================================
+   STEPS
+========================================================= */
 
 .registration-step {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
 }
 
 .step {
-  width: 27px;
-  height: 27px;
-
-  border-radius: 50%;
+  width: 34px;
+  height: 34px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 9px;
-  font-weight: 700;
+  border-radius: 50%;
 
   background: white;
-  color: #a4b4b8;
+
+  border: 2px solid #d5e8eb;
+
+  color: #8aa0a8;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  box-shadow: 0 4px 12px rgba(9, 45, 59, 0.05);
 }
 
 .step.active {
-  background: #087f8c;
+  border-color: var(--teal);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--teal),
+      var(--blue)
+    );
+
   color: white;
+
+  box-shadow:
+    0 7px 18px rgba(15, 163, 177, 0.22);
 }
 
 .step-line {
-  width: 35px;
-  height: 1px;
-  background: #d8e5e7;
+  width: 45px;
+  height: 2px;
+
+  background: #d8e8eb;
 }
 
 .active-line {
-  background: #8bc9cc;
+  background:
+    linear-gradient(
+      90deg,
+      var(--teal),
+      var(--blue)
+    );
 }
 
-/* =================================
+/* =========================================================
    MAIN
-================================= */
+========================================================= */
 
 .registration-main {
   width: 100%;
-  max-width: 900px;
-
-  margin: 45px auto 35px;
 }
+
+/* =========================================================
+   TITLE
+========================================================= */
 
 .registration-title {
   text-align: center;
+
   margin-bottom: 30px;
 }
 
 .title-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
 
-  color: #087f8c;
-
-  background: #e4f4f3;
-
-  padding: 7px 11px;
+  padding: 8px 13px;
 
   border-radius: 20px;
 
-  font-size: 9px;
+  background: var(--teal-soft);
 
+  border: 1px solid #c7eeee;
+
+  color: var(--teal);
+
+  font-size: 9px;
   font-weight: 800;
 
-  letter-spacing: 0.8px;
-
-  margin-bottom: 10px;
+  letter-spacing: 1px;
 }
 
 .registration-title h2 {
-  font-size: 34px;
+  margin-top: 15px;
 
-  letter-spacing: -1px;
+  font-family: "Plus Jakarta Sans", sans-serif;
 
-  color: #12343b;
+  color: var(--navy);
 
-  margin-bottom: 8px;
+  font-size: clamp(30px, 4vw, 43px);
+
+  line-height: 1.15;
+
+  letter-spacing: -1.5px;
 }
 
 .registration-title p {
-  color: #7b9298;
+  max-width: 570px;
+
+  margin: 10px auto 0;
+
+  color: var(--muted);
 
   font-size: 12px;
 
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
-/* =================================
-   CARD
-================================= */
+/* =========================================================
+   REGISTRATION CARD
+========================================================= */
 
 .registration-card {
-  background: white;
+  width: 100%;
 
-  border: 1px solid #e0ecee;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(249, 253, 254, 0.98)
+    );
 
-  border-radius: 19px;
+  border: 1px solid rgba(210, 232, 235, 0.9);
+
+  border-radius: 24px;
 
   padding: 30px;
 
   box-shadow:
-    0 15px 40px rgba(18, 52, 59, 0.07);
+    0 20px 60px rgba(9, 45, 59, 0.08),
+    0 4px 15px rgba(15, 163, 177, 0.04);
 }
+
+/* =========================================================
+   CARD HEADING
+========================================================= */
 
 .card-heading {
   display: flex;
   align-items: center;
-  gap: 12px;
 
-  padding-bottom: 22px;
+  gap: 13px;
 
-  border-bottom: 1px solid #edf2f3;
+  padding-bottom: 23px;
 
   margin-bottom: 25px;
+
+  border-bottom: 1px solid #e4eff1;
 }
 
 .card-heading-icon {
-  width: 42px;
-  height: 42px;
-
-  background: #e7f6f4;
-
-  border-radius: 11px;
+  width: 46px;
+  height: 46px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 18px;
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e4f8f7,
+      #eaf1ff
+    );
+
+  font-size: 21px;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 163, 177, 0.08);
 }
 
 .card-heading h3 {
-  font-size: 15px;
-  color: #173b42;
+  font-family: "Plus Jakarta Sans", sans-serif;
+
+  color: var(--navy);
+
+  font-size: 17px;
 }
 
 .card-heading p {
-  color: #8a9ca1;
-
-  font-size: 9px;
-
   margin-top: 4px;
+
+  color: var(--muted);
+
+  font-size: 10px;
 }
 
-/* =================================
-   SECTION TITLE
-================================= */
+/* =========================================================
+   FORM SECTION
+========================================================= */
 
 .form-section-title {
   display: flex;
   align-items: center;
 
-  gap: 9px;
+  gap: 10px;
 
-  color: #36565c;
+  margin: 26px 0 17px;
 
-  font-size: 11px;
+  color: var(--navy);
 
+  font-size: 12px;
   font-weight: 800;
-
-  margin: 25px 0 16px;
 }
 
 .form-section-title span {
-  width: 25px;
-  height: 25px;
-
-  background: #edf7f7;
-
-  color: #087f8c;
-
-  border-radius: 7px;
+  width: 29px;
+  height: 29px;
 
   display: flex;
   align-items: center;
   justify-content: center;
-
-  font-size: 9px;
-}
-
-/* =================================
-   GRID
-================================= */
-
-.form-grid {
-  display: grid;
-
-  grid-template-columns: repeat(2, 1fr);
-
-  gap: 18px;
-}
-
-.full-width {
-  grid-column: 1 / -1;
-}
-
-/* =================================
-   FIELDS
-================================= */
-
-.registration-field label {
-  display: block;
-
-  color: #3b585e;
-
-  font-size: 10px;
-
-  font-weight: 700;
-
-  margin-bottom: 7px;
-}
-
-.registration-field label span {
-  color: #d15d5d;
-
-  margin-left: 3px;
-}
-
-.registration-input {
-  height: 45px;
-
-  width: 100%;
-
-  border: 1px solid #dce8eb;
-
-  background: #fbfdfd;
-
-  border-radius: 9px;
-
-  display: flex;
-
-  align-items: center;
-
-  padding: 0 12px;
-
-  gap: 9px;
-
-  transition: 0.2s;
-}
-
-.registration-input:focus-within {
-  background: white;
-
-  border-color: #087f8c;
-
-  box-shadow:
-    0 0 0 3px rgba(8, 127, 140, 0.08);
-}
-
-.registration-input > span {
-  width: 22px;
-
-  color: #91a7ac;
-
-  font-size: 12px;
-
-  text-align: center;
-}
-
-.registration-input input,
-.registration-input select {
-  border: none;
-
-  outline: none;
-
-  width: 100%;
-
-  height: 100%;
-
-  background: transparent;
-
-  color: #27474e;
-
-  font-size: 11px;
-}
-
-.registration-input input::placeholder {
-  color: #a9b7ba;
-}
-
-.registration-input select {
-  cursor: pointer;
-}
-
-.registration-password-toggle {
-  border: none;
-
-  background: transparent;
-
-  color: #8ca2a7;
-
-  font-size: 11px;
-}
-
-/* =================================
-   TERMS
-================================= */
-
-.terms-row {
-  display: flex;
-
-  align-items: flex-start;
-
-  gap: 9px;
-
-  margin-top: 25px;
-
-  color: #7d9297;
-
-  font-size: 9px;
-
-  line-height: 1.6;
-
-  cursor: pointer;
-}
-
-.terms-row input {
-  margin-top: 2px;
-
-  accent-color: #087f8c;
-}
-
-.terms-row b {
-  color: #087f8c;
-}
-
-/* =================================
-   ACTIONS
-================================= */
-
-.registration-actions {
-  display: flex;
-
-  justify-content: flex-end;
-
-  gap: 10px;
-
-  margin-top: 25px;
-
-  padding-top: 22px;
-
-  border-top: 1px solid #edf2f3;
-}
-
-.cancel-button {
-  height: 45px;
-
-  padding: 0 20px;
-
-  border: 1px solid #dce8eb;
-
-  background: white;
-
-  color: #668087;
-
-  border-radius: 9px;
-
-  font-size: 11px;
-
-  font-weight: 700;
-}
-
-.cancel-button:hover {
-  background: #f5fafa;
-}
-
-.create-hospital-button {
-  height: 45px;
-
-  padding: 0 19px;
-
-  border: none;
 
   border-radius: 9px;
 
   background:
     linear-gradient(
       135deg,
-      #087f8c,
-      #1788a5
+      var(--teal),
+      var(--blue)
     );
 
   color: white;
 
-  display: flex;
+  font-size: 9px;
+}
 
+/* =========================================================
+   FORM GRID
+========================================================= */
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 18px 20px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* =========================================================
+   FIELD
+========================================================= */
+
+.registration-field {
+  min-width: 0;
+}
+
+.registration-field label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #365966;
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.registration-field label > span {
+  color: var(--red);
+
+  margin-left: 2px;
+}
+
+/* =========================================================
+   INPUT
+========================================================= */
+
+.registration-input {
+  width: 100%;
+  height: 48px;
+
+  display: flex;
   align-items: center;
 
-  gap: 18px;
+  gap: 10px;
 
-  font-size: 11px;
+  padding: 0 13px;
 
-  font-weight: 700;
+  background: #fbfdfe;
+
+  border: 1px solid #d8e8eb;
+
+  border-radius: 11px;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+}
+
+.registration-input > span {
+  width: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--teal);
+
+  font-size: 14px;
+
+  flex-shrink: 0;
+}
+
+.registration-input:focus-within {
+  background: white;
+
+  border-color: var(--teal);
 
   box-shadow:
-    0 8px 18px rgba(8, 127, 140, 0.18);
+    0 0 0 4px rgba(15, 163, 177, 0.08),
+    0 5px 15px rgba(15, 163, 177, 0.05);
+}
+
+.registration-input input,
+.registration-input select {
+  width: 100%;
+  height: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: var(--text);
+
+  font-size: 11px;
+}
+
+.registration-input input::placeholder {
+  color: #a7b8bd;
+}
+
+.registration-input select {
+  cursor: pointer;
+}
+
+/* =========================================================
+   PASSWORD TOGGLE
+========================================================= */
+
+.registration-password-toggle {
+  border: none;
+
+  background: transparent;
+
+  color: #8ca1a8;
+
+  font-size: 13px;
+
+  padding: 5px;
 
   transition: 0.2s;
 }
 
-.create-hospital-button:hover {
-  transform: translateY(-1px);
-
-  box-shadow:
-    0 11px 23px rgba(8, 127, 140, 0.23);
+.registration-password-toggle:hover {
+  color: var(--teal);
 }
 
-.create-hospital-button span:last-child {
-  font-size: 17px;
-}
+/* =========================================================
+   TERMS
+========================================================= */
 
-/* =================================
-   SECURITY
-================================= */
-
-.registration-security {
-  max-width: 500px;
-
-  margin: 18px auto 0;
-
-  padding: 12px 15px;
-
-  border: 1px solid #e1edef;
-
-  background: rgba(255,255,255,0.7);
-
-  border-radius: 10px;
+.terms-row {
+  margin-top: 25px;
 
   display: flex;
+  align-items: flex-start;
 
-  gap: 10px;
+  gap: 9px;
+
+  padding: 13px 14px;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #f3fbfb,
+      #f7faff
+    );
+
+  border: 1px solid #e1eef0;
+
+  color: #70878f;
+
+  font-size: 10px;
+
+  line-height: 1.5;
+
+  cursor: pointer;
+}
+
+.terms-row input {
+  width: 15px;
+  height: 15px;
+
+  margin-top: 1px;
+
+  accent-color: var(--teal);
+
+  flex-shrink: 0;
+}
+
+.terms-row b {
+  color: var(--teal);
+}
+
+/* =========================================================
+   ACTIONS
+========================================================= */
+
+.registration-actions {
+  display: flex;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-top: 25px;
+
+  padding-top: 22px;
+
+  border-top: 1px solid #e5eff1;
+}
+
+.cancel-button {
+  min-width: 110px;
+  height: 48px;
+
+  border: 1px solid #d5e5e8;
+
+  background: white;
+
+  color: #66818a;
+
+  border-radius: 11px;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  transition: 0.2s;
+}
+
+.cancel-button:hover {
+  border-color: #a9cdd2;
+
+  color: var(--navy);
+
+  background: #f8fcfc;
+}
+
+.cancel-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =========================================================
+   CREATE BUTTON
+========================================================= */
+
+.create-hospital-button {
+  min-width: 230px;
+  height: 48px;
+
+  border: none;
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--teal),
+      var(--blue)
+    );
+
+  color: white;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 18px;
+
+  box-shadow:
+    0 10px 25px rgba(15, 163, 177, 0.20);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.create-hospital-button:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 14px 30px rgba(37, 99, 235, 0.22);
+}
+
+.create-hospital-button:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+/* =========================================================
+   SECURITY
+========================================================= */
+
+.registration-security {
+  margin-top: 20px;
+
+  display: flex;
+  align-items: flex-start;
+
+  gap: 12px;
+
+  padding: 15px 17px;
+
+  border-radius: 14px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #eaf8f5,
+      #eef6ff
+    );
+
+  border: 1px solid #d8ebeb;
 }
 
 .registration-security > span {
-  font-size: 14px;
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: white;
+
+  font-size: 15px;
+
+  box-shadow: 0 4px 10px rgba(9, 45, 59, 0.06);
 }
 
 .registration-security strong {
-  color: #4e6c72;
-
   display: block;
 
-  font-size: 9px;
+  color: var(--navy);
 
-  margin-bottom: 3px;
+  font-size: 10px;
 }
 
 .registration-security p {
-  color: #899ca1;
+  margin-top: 4px;
 
-  font-size: 8px;
+  color: #799098;
+
+  font-size: 9px;
 
   line-height: 1.5;
 }
 
-/* =================================
+/* =========================================================
    FOOTER
-================================= */
+========================================================= */
 
 .registration-footer {
-  margin-top: auto;
-
-  padding-top: 18px;
-
-  border-top: 1px solid #dfeaec;
-
   display: flex;
-
   justify-content: space-between;
 
-  color: #9aadb2;
+  margin-top: 25px;
+  padding: 18px 5px 0;
 
-  font-size: 8px;
+  border-top: 1px solid #dcebed;
+
+  color: #94a8ae;
+
+  font-size: 9px;
 }
 
 .registration-footer div {
@@ -592,26 +871,41 @@
   gap: 18px;
 }
 
-/* =================================
-   TABLET
-================================= */
+.registration-footer span {
+  cursor: pointer;
 
-@media (max-width: 700px) {
+  transition: 0.2s;
+}
 
-  .registration-container {
-    padding: 25px 18px;
+.registration-footer span:hover {
+  color: var(--teal);
+}
+
+/* =========================================================
+   RESPONSIVE — 900px
+========================================================= */
+
+@media (max-width: 900px) {
+  .registration-page {
+    padding: 25px;
+  }
+
+  .registration-header {
+    flex-wrap: wrap;
+
+    gap: 18px;
   }
 
   .registration-brand {
-    display: none;
+    order: -1;
+
+    width: 100%;
+
+    justify-content: center;
   }
 
-  .registration-main {
-    margin-top: 35px;
-  }
-
-  .registration-title h2 {
-    font-size: 29px;
+  .registration-step {
+    margin-left: auto;
   }
 
   .form-grid {
@@ -621,37 +915,52 @@
   .full-width {
     grid-column: auto;
   }
-
-  .registration-card {
-    padding: 22px;
-  }
 }
 
-/* =================================
-   MOBILE
-================================= */
+/* =========================================================
+   RESPONSIVE — 600px
+========================================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  .registration-page {
+    padding: 18px 14px 25px;
+  }
 
   .registration-header {
-    margin-bottom: 10px;
+    margin-bottom: 25px;
+  }
+
+  .registration-brand h1 {
+    font-size: 18px;
+  }
+
+  .registration-logo {
+    width: 42px;
+    height: 42px;
+
+    font-size: 23px;
   }
 
   .registration-step {
     display: none;
   }
 
-  .registration-title {
-    margin-bottom: 22px;
+  .registration-title h2 {
+    font-size: 29px;
   }
 
-  .registration-title h2 {
-    font-size: 27px;
+  .registration-title p {
+    font-size: 11px;
   }
 
   .registration-card {
-    border-radius: 14px;
-    padding: 18px;
+    padding: 20px 16px;
+
+    border-radius: 18px;
+  }
+
+  .card-heading h3 {
+    font-size: 15px;
   }
 
   .registration-actions {
@@ -661,10 +970,17 @@
   .cancel-button,
   .create-hospital-button {
     width: 100%;
-    justify-content: center;
   }
 
   .registration-footer {
-    margin-top: 25px;
+    flex-direction: column;
+
+    gap: 12px;
+
+    text-align: center;
+  }
+
+  .registration-footer div {
+    justify-content: center;
   }
 }

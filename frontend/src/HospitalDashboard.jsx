@@ -1,9 +1,7 @@
 import { useState } from "react";
 import "./HospitalDashboard.css";
-
 import AIDetection from "./AIDetection";
 import WasteManagement from "./WasteManagement";
-
 function HospitalDashboard() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
 
@@ -42,14 +40,10 @@ function HospitalDashboard() {
     { name: "Alerts", icon: "!" },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("biotrackLoggedIn");
-    window.location.reload();
-  };
-
-  // =========================================================
-  // ACTIVE PAGE RENDERING
-  // =========================================================
+        const handleLogout = () => {
+        localStorage.removeItem("biotrackLoggedIn");
+        window.location.reload();
+        };
 
   const renderContent = () => {
     switch (activeMenu) {
@@ -653,10 +647,259 @@ function DashboardOverview({ setActiveMenu, hospitalName }) {
 
 
 /* =========================================================
+   WASTE SECTION
+========================================================= */
+
+function WasteSection() {
+
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("All");
+
+  const [wasteRecords, setWasteRecords] = useState([
+    {
+      id: "BW-1001",
+      type: "Used Gloves",
+      category: "Yellow",
+      department: "Ward A",
+      weight: "12 kg",
+      status: "Collected",
+    },
+    {
+      id: "BW-1002",
+      type: "Syringes",
+      category: "White",
+      department: "OT-02",
+      weight: "7 kg",
+      status: "Pending",
+    },
+    {
+      id: "BW-1003",
+      type: "Plastic Tubes",
+      category: "Red",
+      department: "ICU",
+      weight: "15 kg",
+      status: "Collected",
+    },
+    {
+      id: "BW-1004",
+      type: "Medicine Vials",
+      category: "Blue",
+      department: "Pharmacy",
+      weight: "9 kg",
+      status: "Pending",
+    },
+    {
+      id: "BW-1005",
+      type: "Dressing Material",
+      category: "Yellow",
+      department: "Ward B",
+      weight: "21 kg",
+      status: "Collected",
+    },
+  ]);
+
+  const addDemoRecord = () => {
+    const newRecord = {
+      id: `BW-${1006 + wasteRecords.length}`,
+      type: "New Biomedical Waste",
+      category: "Yellow",
+      department: "Ward A",
+      weight: "5 kg",
+      status: "Pending",
+    };
+
+    setWasteRecords((prev) => [newRecord, ...prev]);
+
+    alert("New waste record added successfully.");
+  };
+
+  const filteredRecords = wasteRecords.filter((item) => {
+
+    const matchesSearch =
+      item.type.toLowerCase().includes(search.toLowerCase()) ||
+      item.id.toLowerCase().includes(search.toLowerCase()) ||
+      item.department.toLowerCase().includes(search.toLowerCase());
+
+    const matchesCategory =
+      category === "All" ||
+      item.category === category;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  return (
+    <div className="module-page">
+
+      <div className="module-header">
+
+        <div>
+          <span className="panel-label">
+            WASTE MANAGEMENT
+          </span>
+
+          <h2>Biomedical Waste Records</h2>
+
+          <p>
+            Record, classify and monitor hospital biomedical waste.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="primary-action"
+          onClick={addDemoRecord}
+        >
+          + Add Waste Record
+        </button>
+
+      </div>
+
+
+      {/* SUMMARY */}
+
+      <div className="module-summary">
+
+        <div className="mini-stat">
+          <span>♻</span>
+          <div>
+            <small>Total Waste</small>
+            <strong>248.6 kg</strong>
+          </div>
+        </div>
+
+        <div className="mini-stat">
+          <span>🟡</span>
+          <div>
+            <small>Yellow</small>
+            <strong>82 kg</strong>
+          </div>
+        </div>
+
+        <div className="mini-stat">
+          <span>🔴</span>
+          <div>
+            <small>Red</small>
+            <strong>61 kg</strong>
+          </div>
+        </div>
+
+        <div className="mini-stat">
+          <span>⚪</span>
+          <div>
+            <small>White</small>
+            <strong>48 kg</strong>
+          </div>
+        </div>
+
+      </div>
+
+
+      {/* FILTER */}
+
+      <div className="filter-panel">
+
+        <input
+          type="text"
+          placeholder="Search waste, ID or department..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
+          <option value="All">All Categories</option>
+          <option value="Yellow">Yellow</option>
+          <option value="Red">Red</option>
+          <option value="White">White</option>
+          <option value="Blue">Blue</option>
+        </select>
+
+      </div>
+
+
+      {/* TABLE */}
+
+      <div className="table-panel">
+
+        <div className="table-title">
+          <h3>Waste Records</h3>
+          <span>{filteredRecords.length} records</span>
+        </div>
+
+        <div className="table-wrapper">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>Waste ID</th>
+                <th>Waste Type</th>
+                <th>Category</th>
+                <th>Department</th>
+                <th>Weight</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              {filteredRecords.map((item) => (
+                <tr key={item.id}>
+
+                  <td>
+                    <strong>{item.id}</strong>
+                  </td>
+
+                  <td>{item.type}</td>
+
+                  <td>
+                    <span
+                      className={`category-pill ${item.category.toLowerCase()}`}
+                    >
+                      {item.category}
+                    </span>
+                  </td>
+
+                  <td>{item.department}</td>
+
+                  <td>{item.weight}</td>
+
+                  <td>
+                    <span
+                      className={
+                        item.status === "Collected"
+                          ? "table-status collected"
+                          : "table-status pending"
+                      }
+                    >
+                      {item.status}
+                    </span>
+                  </td>
+
+                </tr>
+              ))}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
+
+
+/* =========================================================
    COLLECTION SECTION
 ========================================================= */
 
 function CollectionSection() {
+
   const [pickups, setPickups] = useState([
     {
       id: "PK-2041",
@@ -693,6 +936,7 @@ function CollectionSection() {
   ]);
 
   const requestPickup = () => {
+
     const newPickup = {
       id: `PK-${2050 + pickups.length}`,
       department: "Ward B",
@@ -708,6 +952,7 @@ function CollectionSection() {
   };
 
   const updateStatus = (id) => {
+
     setPickups((prev) =>
       prev.map((item) =>
         item.id === id
@@ -755,7 +1000,6 @@ function CollectionSection() {
 
         <div className="mini-stat">
           <span>▣</span>
-
           <div>
             <small>Total Pickups</small>
             <strong>{pickups.length}</strong>
@@ -764,37 +1008,30 @@ function CollectionSection() {
 
         <div className="mini-stat">
           <span>✓</span>
-
           <div>
             <small>Completed</small>
             <strong>
-              {
-                pickups.filter(
-                  (p) => p.status === "Completed"
-                ).length
-              }
+              {pickups.filter(
+                (p) => p.status === "Completed"
+              ).length}
             </strong>
           </div>
         </div>
 
         <div className="mini-stat">
           <span>⏳</span>
-
           <div>
             <small>Pending</small>
             <strong>
-              {
-                pickups.filter(
-                  (p) => p.status === "Pending"
-                ).length
-              }
+              {pickups.filter(
+                (p) => p.status === "Pending"
+              ).length}
             </strong>
           </div>
         </div>
 
         <div className="mini-stat">
           <span>⚖</span>
-
           <div>
             <small>Today's Waste</small>
             <strong>117 kg</strong>
@@ -808,10 +1045,7 @@ function CollectionSection() {
 
         {pickups.map((pickup) => (
 
-          <div
-            className="collection-card"
-            key={pickup.id}
-          >
+          <div className="collection-card" key={pickup.id}>
 
             <div className="collection-card-top">
 
@@ -871,10 +1105,12 @@ function CollectionSection() {
 ========================================================= */
 
 function TrackingSection() {
+
   const [trackingId, setTrackingId] = useState("");
   const [tracked, setTracked] = useState(false);
 
   const handleTrack = () => {
+
     if (!trackingId.trim()) {
       alert("Please enter a Waste ID or Pickup ID.");
       return;
@@ -907,7 +1143,6 @@ function TrackingSection() {
 
         <div>
           <h3>Track Waste</h3>
-
           <p>
             Enter a Waste ID or Pickup ID to view its journey.
           </p>
@@ -1056,9 +1291,7 @@ function AnalyticsSection() {
         <button
           type="button"
           className="secondary-action"
-          onClick={() =>
-            alert("Analytics report generated successfully.")
-          }
+          onClick={() => alert("Analytics report generated successfully.")}
         >
           ↓ Generate Report
         </button>
@@ -1104,7 +1337,6 @@ function AnalyticsSection() {
         <div className="panel">
 
           <div className="panel-header">
-
             <div>
               <span className="panel-label">
                 CATEGORY ANALYSIS
@@ -1112,18 +1344,12 @@ function AnalyticsSection() {
 
               <h2>Waste by Category</h2>
             </div>
-
           </div>
-
 
           <div className="analytics-bars">
 
             {analytics.map((item) => (
-
-              <div
-                className="analytics-bar-row"
-                key={item.name}
-              >
+              <div className="analytics-bar-row" key={item.name}>
 
                 <div className="analytics-bar-label">
                   <strong>{item.name}</strong>
@@ -1131,18 +1357,15 @@ function AnalyticsSection() {
                 </div>
 
                 <div className="analytics-bar">
-
                   <div
                     className={`analytics-bar-fill ${item.className}`}
                     style={{
                       width: `${item.percentage}%`,
                     }}
                   ></div>
-
                 </div>
 
               </div>
-
             ))}
 
           </div>
@@ -1153,7 +1376,6 @@ function AnalyticsSection() {
         <div className="panel">
 
           <div className="panel-header">
-
             <div>
               <span className="panel-label">
                 WEEKLY PERFORMANCE
@@ -1161,9 +1383,7 @@ function AnalyticsSection() {
 
               <h2>Collection Trend</h2>
             </div>
-
           </div>
-
 
           <div className="weekly-chart">
 
@@ -1265,6 +1485,7 @@ function AlertsSection() {
   ]);
 
   const markRead = (id) => {
+
     setAlerts((prev) =>
       prev.map((alert) =>
         alert.id === id
@@ -1488,7 +1709,6 @@ function SettingsSection({
         <div className="panel settings-card">
 
           <div className="settings-card-header">
-
             <div className="settings-icon">
               🏥
             </div>
@@ -1497,7 +1717,6 @@ function SettingsSection({
               <h3>Hospital Profile</h3>
               <p>Basic hospital information</p>
             </div>
-
           </div>
 
 
@@ -1663,7 +1882,6 @@ function SettingsSection({
 
             <div>
               <span>Application</span>
-
               <strong className="online">
                 ● Online
               </strong>
@@ -1671,7 +1889,6 @@ function SettingsSection({
 
             <div>
               <span>AI Detection</span>
-
               <strong className="online">
                 ● Ready
               </strong>
@@ -1679,7 +1896,6 @@ function SettingsSection({
 
             <div>
               <span>Database</span>
-
               <strong className="demo">
                 ● Local Storage
               </strong>
@@ -1747,20 +1963,15 @@ function WasteBar({
     <div className="waste-row">
 
       <div className="waste-name">
-        <span
-          className={`waste-dot ${className}`}
-        ></span>
-
+        <span className={`waste-dot ${className}`}></span>
         {name}
       </div>
 
       <div className="bar">
-
         <div
           className={`bar-fill ${fillClass}`}
           style={{ width }}
         ></div>
-
       </div>
 
       <strong>{weight}</strong>

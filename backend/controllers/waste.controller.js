@@ -1,113 +1,19 @@
-const mongoose = require("mongoose");
-const WasteRecord = require("../models/WasteRecord");
+const Waste = require("../models/Waste");
 
 // =========================================
-// ADD WASTE RECORD
+// GET ALL WASTE RECORDS
 // =========================================
 
-const createWasteRecord = async (req, res) => {
+const getWasteRecords = async (req, res) => {
   try {
-    const {
-      hospitalId,
-      wasteId,
-      category,
-      weight,
-      bin,
-      department,
-      status,
-      recordedAt,
-    } = req.body;
-
-    // Check required fields
-    if (
-      !hospitalId ||
-      !wasteId ||
-      !category ||
-      weight === undefined ||
-      !bin ||
-      !department
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide all required waste fields.",
-      });
-    }
-
-    // Validate hospital ID
-    if (!mongoose.Types.ObjectId.isValid(hospitalId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid hospital ID.",
-      });
-    }
-
-    // Validate weight
-    if (Number(weight) <= 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Waste weight must be greater than 0.",
-      });
-    }
-
-    // Create record
-    const wasteRecord = await WasteRecord.create({
-      hospitalId,
-      wasteId: wasteId.trim(),
-      category: category.trim(),
-      weight: Number(weight),
-      bin,
-      department: department.trim(),
-      status: status || "Pending",
-      recordedAt: recordedAt || new Date(),
-    });
-
-    res.status(201).json({
-      success: true,
-      message: "Waste record created successfully.",
-      wasteRecord,
-    });
-  } catch (error) {
-    console.error("Create waste record error:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server error while creating waste record.",
-    });
-  }
-};
-
-// =========================================
-// GET HOSPITAL WASTE RECORDS
-// =========================================
-
-const getHospitalWasteRecords = async (req, res) => {
-  try {
-    const { hospitalId } = req.query;
-
-    if (!hospitalId) {
-      return res.status(400).json({
-        success: false,
-        message: "Hospital ID is required.",
-      });
-    }
-
-    if (!mongoose.Types.ObjectId.isValid(hospitalId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid hospital ID.",
-      });
-    }
-
-    const wasteRecords = await WasteRecord.find({
-      hospitalId,
-    }).sort({
-      recordedAt: -1,
-    });
+    const records = await Waste.find({
+      hospital: req.user.id,
+    }).sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      count: wasteRecords.length,
-      wasteRecords,
+      count: records.length,
+      records,
     });
   } catch (error) {
     console.error("Get waste records error:", error);
@@ -120,24 +26,129 @@ const getHospitalWasteRecords = async (req, res) => {
 };
 
 // =========================================
-// MARK WASTE AS COLLECTED
+// CREATE WASTE RECORD
 // =========================================
 
-const markWasteCollected = async (req, res) => {
+const createWasteRecord = async (req, res) => {
   try {
-    const { id } = req.params;
+    const {
+      type,
+      category,
+      bin,
+      weight,
+      department,
+      aiConfidence,
+      aiDetected,
+    } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    // Check required fields
+    if (
+      !type ||
+      !category ||
+      !bin ||
+      weight === undefined ||
+      !department
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid waste record ID.",
+        message: "Please provide all required waste fields.",
       });
     }
 
-    const wasteRecord = await WasteRecord.findByIdAndUpdate(
-      id,
+    // Validate weight
+    const numericWeight = Number(weight);
+
+    if (
+      Number.isNaN(numericWeight) ||
+      numericWeight <= 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Weight must be a valid number greater than 0.",
+      });
+    }
+
+    // Generate Waste ID
+    const lastWaste = await Waste.findOne({})
+      .sort({ createdAt: -1 })
+      .select("wasteId");
+
+    let nextNumber = 1001;
+
+    if (lastWaste?.wasteId) {
+      const numberPart = Number(
+        lastWaste.wasteId.replace("BW-", "")
+      );
+
+      if (!Number.isNaN(numberPart)) {
+        nextNumber = numberPart + 1;
+      }
+    }
+
+    const wasteId = `BW-${nextNumber}`;
+
+    // Create waste record
+    const waste = await Waste.create({
+      hospital: req.user.id,
+      wasteId,
+      type: type.trim(),
+      category: category.trim(),
+      bin,
+      weight: numericWeight,
+      department: department.trim(),
+      status: "Pending",
+      aiConfidence:
+        aiConfidence !== undefined
+          ? Number(aiConfidence)
+          : null,
+      aiDetected: aiDetected === true,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Waste record created successfully.",
+      record: waste,
+    });
+  } catch (error) {
+    console.error("Create waste record error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while creating waste record.",
+    });
+  }
+};
+
+// =========================================
+// UPDATE WASTE STATUS
+// =========================================
+
+const updateWasteStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = [
+      "Pending",
+      "Collected",
+      "Processing",
+      "Disposed",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid waste status.",
+      });
+    }
+
+    const waste = await Waste.findOneAndUpdate(
       {
-        status: "Collected",
+        _id: id,
+        hospital: req.user.id,
+      },
+      {
+        status,
       },
       {
         new: true,
@@ -145,7 +156,7 @@ const markWasteCollected = async (req, res) => {
       }
     );
 
-    if (!wasteRecord) {
+    if (!waste) {
       return res.status(404).json({
         success: false,
         message: "Waste record not found.",
@@ -154,15 +165,15 @@ const markWasteCollected = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Waste marked as collected.",
-      wasteRecord,
+      message: "Waste status updated successfully.",
+      record: waste,
     });
   } catch (error) {
-    console.error("Mark waste collected error:", error);
+    console.error("Update waste status error:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server error while updating waste record.",
+      message: "Server error while updating waste status.",
     });
   }
 };
@@ -175,16 +186,12 @@ const deleteWasteRecord = async (req, res) => {
   try {
     const { id } = req.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid waste record ID.",
-      });
-    }
+    const waste = await Waste.findOneAndDelete({
+      _id: id,
+      hospital: req.user.id,
+    });
 
-    const wasteRecord = await WasteRecord.findByIdAndDelete(id);
-
-    if (!wasteRecord) {
+    if (!waste) {
       return res.status(404).json({
         success: false,
         message: "Waste record not found.",
@@ -206,8 +213,8 @@ const deleteWasteRecord = async (req, res) => {
 };
 
 module.exports = {
+  getWasteRecords,
   createWasteRecord,
-  getHospitalWasteRecords,
-  markWasteCollected,
+  updateWasteStatus,
   deleteWasteRecord,
 };

@@ -1,6 +1,9 @@
-/* =========================================
-   GLOBAL RESET
-========================================= */
+/* =========================================================
+   BIOTRACK AI — LOGIN
+   PREMIUM MEDICAL AI THEME
+========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap");
 
 * {
   margin: 0;
@@ -16,51 +19,102 @@ body,
 }
 
 body {
-  font-family:
-    Inter,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: "DM Sans", sans-serif;
 
-  background: #edf8fa;
-  color: #173f4c;
+  background: #eef8fa;
+
+  color: #092f40;
 }
 
+button,
+input {
+  font-family: inherit;
+}
 
-/* =========================================
-   APP
-========================================= */
+button {
+  cursor: pointer;
+}
+
+/* =========================================================
+   APP BACKGROUND
+========================================================= */
 
 .app {
   width: 100%;
   min-height: 100vh;
-  padding: 24px;
-  background:
-    radial-gradient(
-      circle at 10% 10%,
-      rgba(38, 174, 183, 0.12),
-      transparent 30%
-    ),
-    #edf8fa;
+
+  padding: 30px;
 
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+
+  position: relative;
+  overflow: hidden;
+
+  background:
+    radial-gradient(
+      circle at 5% 10%,
+      rgba(15, 163, 177, 0.16),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 95% 90%,
+      rgba(37, 99, 235, 0.12),
+      transparent 30%
+    ),
+    #eef8fa;
 }
 
+/* Decorative circles */
 
-/* =========================================
-   MAIN LOGIN CONTAINER
-========================================= */
+.app::before {
+  content: "";
+
+  position: absolute;
+
+  width: 600px;
+  height: 600px;
+
+  top: -350px;
+  left: -250px;
+
+  border-radius: 50%;
+
+  background: rgba(15, 163, 177, 0.07);
+}
+
+.app::after {
+  content: "";
+
+  position: absolute;
+
+  width: 500px;
+  height: 500px;
+
+  right: -280px;
+  bottom: -280px;
+
+  border-radius: 50%;
+
+  background: rgba(37, 99, 235, 0.06);
+}
+
+/* =========================================================
+   LOGIN CONTAINER
+========================================================= */
 
 .login-container {
-  width: 100%;
-  max-width: 1500px;
+  width: min(1500px, 100%);
+
   min-height: 820px;
 
   display: grid;
+
   grid-template-columns: 1.08fr 0.92fr;
+
+  position: relative;
+  z-index: 2;
 
   overflow: hidden;
 
@@ -69,37 +123,41 @@ body {
   background: white;
 
   box-shadow:
-    0 30px 80px rgba(18, 75, 86, 0.12);
+    0 30px 80px rgba(9, 45, 59, 0.14),
+    0 8px 30px rgba(15, 163, 177, 0.05);
 }
 
-
-/* =========================================
-   LEFT PANEL
-========================================= */
+/* =========================================================
+   LEFT HERO
+========================================================= */
 
 .login-left {
   position: relative;
 
   padding: 70px 65px;
 
-  color: white;
-
-  background:
-    linear-gradient(
-      145deg,
-      #073e45,
-      #075c63 55%,
-      #08747d
-    );
+  display: flex;
+  flex-direction: column;
 
   overflow: hidden;
 
-  display: flex;
-  flex-direction: column;
+  color: white;
+
+  background:
+    radial-gradient(
+      circle at 85% 10%,
+      rgba(22, 182, 178, 0.30),
+      transparent 25%
+    ),
+    linear-gradient(
+      145deg,
+      #092d3b,
+      #0b3b4b 50%,
+      #087a85
+    );
 }
 
-
-/* Background grid */
+/* Grid */
 
 .login-left::before {
   content: "";
@@ -108,16 +166,16 @@ body {
 
   inset: 0;
 
-  opacity: 0.08;
+  opacity: 0.07;
 
   background-image:
     linear-gradient(
-      rgba(255,255,255,0.5) 1px,
+      rgba(255,255,255,0.6) 1px,
       transparent 1px
     ),
     linear-gradient(
       90deg,
-      rgba(255,255,255,0.5) 1px,
+      rgba(255,255,255,0.6) 1px,
       transparent 1px
     );
 
@@ -126,40 +184,39 @@ body {
   pointer-events: none;
 }
 
-
-/* Decorative circle */
+/* Circle */
 
 .login-left::after {
   content: "";
 
   position: absolute;
 
-  width: 500px;
-  height: 500px;
+  width: 520px;
+  height: 520px;
+
+  right: -260px;
+  bottom: -270px;
 
   border-radius: 50%;
 
-  right: -240px;
-  bottom: -250px;
+  border: 1px solid rgba(255,255,255,0.08);
 
-  background: rgba(255,255,255,0.05);
+  box-shadow:
+    0 0 0 80px rgba(255,255,255,0.015),
+    0 0 0 160px rgba(255,255,255,0.01);
 
   pointer-events: none;
 }
 
-
-/* =========================================
-   BRAND BADGE
-========================================= */
+/* =========================================================
+   BADGE
+========================================================= */
 
 .brand-badge {
+  width: fit-content;
+
   position: relative;
   z-index: 2;
-
-  display: inline-flex;
-  align-items: center;
-
-  width: fit-content;
 
   padding: 8px 13px;
 
@@ -167,21 +224,20 @@ body {
 
   background: rgba(255,255,255,0.08);
 
-  border: 1px solid rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.13);
 
-  color: #9ce0d9;
+  color: #9ce9df;
 
   font-size: 10px;
 
   font-weight: 800;
 
-  letter-spacing: 1.4px;
+  letter-spacing: 1.3px;
 }
 
-
-/* =========================================
+/* =========================================================
    HERO TITLE
-========================================= */
+========================================================= */
 
 .login-left h1 {
   position: relative;
@@ -189,27 +245,28 @@ body {
 
   margin-top: 30px;
 
+  font-family: "Plus Jakarta Sans", sans-serif;
+
   color: white;
 
   font-size: clamp(45px, 5vw, 74px);
 
   line-height: 1.03;
 
-  letter-spacing: -2.5px;
+  letter-spacing: -3px;
 
   font-weight: 800;
 }
 
-
-/* =========================================
-   HERO DESCRIPTION
-========================================= */
+/* =========================================================
+   DESCRIPTION
+========================================================= */
 
 .hero-description {
   position: relative;
   z-index: 2;
 
-  max-width: 690px;
+  max-width: 650px;
 
   margin-top: 25px;
 
@@ -220,10 +277,9 @@ body {
   line-height: 1.75;
 }
 
-
-/* =========================================
+/* =========================================================
    MINI DASHBOARD
-========================================= */
+========================================================= */
 
 .mini-dashboard {
   position: relative;
@@ -235,19 +291,26 @@ body {
 
   border-radius: 20px;
 
-  background: rgba(255,255,255,0.07);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.10),
+      rgba(255,255,255,0.04)
+    );
 
-  border: 1px solid rgba(255,255,255,0.13);
+  border: 1px solid rgba(255,255,255,0.14);
 
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
+
+  box-shadow:
+    0 20px 45px rgba(0,0,0,0.10);
 }
-
-
-/* Header */
 
 .mini-dashboard-header {
   display: flex;
+
   justify-content: space-between;
+
   align-items: flex-start;
 
   margin-bottom: 20px;
@@ -257,8 +320,6 @@ body {
   color: rgba(255,255,255,0.48);
 
   font-size: 10px;
-
-  font-weight: 600;
 }
 
 .mini-dashboard-header h3 {
@@ -269,31 +330,25 @@ body {
   font-size: 17px;
 }
 
-
-/* Live */
-
 .live-status {
   color: #7ee2bd !important;
 
   font-size: 10px !important;
 
-  font-weight: 700 !important;
+  font-weight: 800 !important;
 }
 
-
-/* =========================================
+/* =========================================================
    MINI STATS
-========================================= */
+========================================================= */
 
 .mini-stats {
   display: grid;
 
-  grid-template-columns:
-    repeat(3, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 
   gap: 12px;
 }
-
 
 .mini-stat {
   display: flex;
@@ -305,31 +360,34 @@ body {
 
   border-radius: 13px;
 
-  background: rgba(255,255,255,0.06);
-}
+  background: rgba(255,255,255,0.07);
 
+  border: 1px solid rgba(255,255,255,0.04);
+}
 
 .mini-icon {
   width: 38px;
   height: 38px;
 
-  flex-shrink: 0;
-
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
 
   border-radius: 10px;
 
-  background: rgba(255,255,255,0.08);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(22,182,178,0.25),
+      rgba(37,99,235,0.20)
+    );
 
-  color: #9be2db;
+  color: #a4eee6;
 
-  font-size: 11px;
-
-  font-weight: 800;
+  font-size: 16px;
 }
-
 
 .mini-stat strong {
   display: block;
@@ -338,7 +396,6 @@ body {
 
   font-size: 16px;
 }
-
 
 .mini-stat span {
   display: block;
@@ -350,10 +407,9 @@ body {
   font-size: 8px;
 }
 
-
-/* =========================================
+/* =========================================================
    TARGET
-========================================= */
+========================================================= */
 
 .target-section {
   margin-top: 20px;
@@ -374,14 +430,14 @@ body {
 }
 
 .target-section strong {
-  color: #8ee1d4;
+  color: #8ee9dd;
 
   font-size: 10px;
 }
 
-
 .target-bar {
   width: 100%;
+
   height: 6px;
 
   overflow: hidden;
@@ -391,19 +447,22 @@ body {
   background: rgba(255,255,255,0.12);
 }
 
-
 .target-progress {
   height: 100%;
 
   border-radius: 10px;
 
-  background: #7ed9cb;
+  background:
+    linear-gradient(
+      90deg,
+      #16b6b2,
+      #2563eb
+    );
 }
 
-
-/* =========================================
+/* =========================================================
    FEATURES
-========================================= */
+========================================================= */
 
 .feature-list {
   position: relative;
@@ -414,9 +473,9 @@ body {
   gap: 28px;
 
   margin-top: auto;
+
   padding-top: 40px;
 }
-
 
 .feature-list span {
   color: rgba(255,255,255,0.55);
@@ -426,44 +485,46 @@ body {
   font-weight: 600;
 }
 
-
-/* =========================================
-   RIGHT PANEL
-========================================= */
+/* =========================================================
+   RIGHT LOGIN
+========================================================= */
 
 .login-right {
-  background: #ffffff;
-
   display: flex;
 
   justify-content: center;
   align-items: center;
 
   padding: 60px;
-}
 
+  background:
+    linear-gradient(
+      145deg,
+      #ffffff,
+      #f8fcfd
+    );
+}
 
 .login-form-wrapper {
   width: 100%;
+
   max-width: 530px;
 }
 
-
-/* =========================================
+/* =========================================================
    LOGIN HEADER
-========================================= */
+========================================================= */
 
 .login-header {
   margin-bottom: 35px;
 }
-
 
 .login-small-title {
   display: block;
 
   margin-bottom: 9px;
 
-  color: #15939d;
+  color: #0fa3b1;
 
   font-size: 9px;
 
@@ -472,17 +533,19 @@ body {
   letter-spacing: 1.6px;
 }
 
-
 .login-header h2 {
-  color: #183f4c;
+  color: #092d3b;
+
+  font-family: "Plus Jakarta Sans", sans-serif;
 
   font-size: 30px;
 
   line-height: 1.2;
 
   font-weight: 800;
-}
 
+  letter-spacing: -1px;
+}
 
 .login-header p {
   margin-top: 10px;
@@ -494,15 +557,13 @@ body {
   line-height: 1.6;
 }
 
-
-/* =========================================
+/* =========================================================
    FORM
-========================================= */
+========================================================= */
 
 .form-group {
   margin-bottom: 22px;
 }
-
 
 .form-group label {
   display: block;
@@ -515,7 +576,6 @@ body {
 
   font-weight: 700;
 }
-
 
 .form-group input {
   width: 100%;
@@ -539,25 +599,22 @@ body {
   transition: 0.2s;
 }
 
-
 .form-group input::placeholder {
   color: #aab9bd;
 }
 
-
 .form-group input:focus {
-  border-color: #159aa3;
+  border-color: var(--teal);
 
   background: white;
 
   box-shadow:
-    0 0 0 4px rgba(21,154,163,0.08);
+    0 0 0 4px rgba(15,163,177,0.08);
 }
 
-
-/* =========================================
-   PASSWORD LABEL
-========================================= */
+/* =========================================================
+   PASSWORD
+========================================================= */
 
 .password-label {
   display: flex;
@@ -567,30 +624,25 @@ body {
   align-items: center;
 }
 
-
 .password-label label {
   margin-bottom: 8px;
 }
-
 
 .forgot-password {
   border: none;
 
   background: transparent;
 
-  color: #078691;
+  color: var(--teal);
 
   font-size: 10px;
 
   font-weight: 700;
-
-  cursor: pointer;
 }
 
-
-/* =========================================
-   REMEMBER ME
-========================================= */
+/* =========================================================
+   REMEMBER
+========================================================= */
 
 .remember-me {
   display: flex;
@@ -608,20 +660,16 @@ body {
   cursor: pointer;
 }
 
-
 .remember-me input {
   width: 16px;
   height: 16px;
 
-  accent-color: #128f99;
-
-  cursor: pointer;
+  accent-color: var(--teal);
 }
 
-
-/* =========================================
+/* =========================================================
    LOGIN BUTTON
-========================================= */
+========================================================= */
 
 .login-button {
   width: 100%;
@@ -635,8 +683,8 @@ body {
   background:
     linear-gradient(
       135deg,
-      #159ca5,
-      #087f91
+      #0fa3b1,
+      #2563eb
     );
 
   color: white;
@@ -645,45 +693,38 @@ body {
 
   font-weight: 800;
 
-  cursor: pointer;
-
   display: flex;
 
-  justify-content: center;
   align-items: center;
+
+  justify-content: center;
 
   gap: 18px;
 
   box-shadow:
-    0 12px 25px rgba(15,140,150,0.18);
+    0 12px 28px rgba(15,163,177,0.20);
 
   transition: 0.2s;
 }
 
-
 .login-button:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 
   box-shadow:
-    0 15px 30px rgba(15,140,150,0.25);
+    0 16px 32px rgba(37,99,235,0.23);
 }
-
 
 .login-button span {
   font-size: 18px;
-
-  font-weight: 400;
 }
 
-
-/* =========================================
+/* =========================================================
    CREATE ACCOUNT
-========================================= */
+========================================================= */
 
 .create-account-section {
   margin-top: 28px;
 }
-
 
 .divider {
   display: flex;
@@ -694,7 +735,6 @@ body {
 
   margin-bottom: 15px;
 }
-
 
 .divider::before,
 .divider::after {
@@ -707,7 +747,6 @@ body {
   background: #e6edef;
 }
 
-
 .divider span {
   color: #a1afb3;
 
@@ -717,7 +756,6 @@ body {
 
   letter-spacing: 1px;
 }
-
 
 .create-account-button {
   width: 100%;
@@ -732,13 +770,11 @@ body {
 
   background: white;
 
-  color: #117783;
+  color: var(--teal);
 
   font-size: 11px;
 
   font-weight: 800;
-
-  cursor: pointer;
 
   display: flex;
 
@@ -749,17 +785,20 @@ body {
   transition: 0.2s;
 }
 
-
 .create-account-button:hover {
-  border-color: #159ca5;
+  border-color: var(--teal);
 
-  background: #f6fcfc;
+  background:
+    linear-gradient(
+      90deg,
+      #f1fbfb,
+      #f4f8ff
+    );
 }
 
-
-/* =========================================
-   SECURITY NOTE
-========================================= */
+/* =========================================================
+   SECURITY
+========================================================= */
 
 .security-note {
   display: flex;
@@ -772,9 +811,15 @@ body {
 
   border-radius: 12px;
 
-  background: #f7fafb;
-}
+  background:
+    linear-gradient(
+      135deg,
+      #f1faf9,
+      #f2f6ff
+    );
 
+  border: 1px solid #e1edef;
+}
 
 .security-icon {
   width: 32px;
@@ -790,9 +835,8 @@ body {
 
   background: #e5f5f4;
 
-  color: #178e96;
+  color: var(--teal);
 }
-
 
 .security-note strong {
   display: block;
@@ -801,7 +845,6 @@ body {
 
   font-size: 9px;
 }
-
 
 .security-note span {
   display: block;
@@ -815,10 +858,9 @@ body {
   line-height: 1.5;
 }
 
-
-/* =========================================
+/* =========================================================
    FOOTER
-========================================= */
+========================================================= */
 
 .login-footer {
   display: flex;
@@ -838,25 +880,17 @@ body {
   font-size: 8px;
 }
 
-
 .login-footer div {
   display: flex;
 
   gap: 18px;
 }
 
-
-.login-footer div span {
-  cursor: pointer;
-}
-
-
-/* =========================================
+/* =========================================================
    RESPONSIVE
-========================================= */
+========================================================= */
 
 @media (max-width: 1100px) {
-
   .login-container {
     grid-template-columns: 1fr;
   }
@@ -868,12 +902,9 @@ body {
   .login-right {
     min-height: 700px;
   }
-
 }
 
-
 @media (max-width: 700px) {
-
   .app {
     padding: 0;
   }
@@ -885,9 +916,7 @@ body {
   }
 
   .login-left {
-    padding: 40px 25px;
-
-    min-height: auto;
+    padding: 45px 25px;
   }
 
   .login-left h1 {
@@ -917,5 +946,4 @@ body {
   .login-header h2 {
     font-size: 26px;
   }
-
 }

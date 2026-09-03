@@ -1,68 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./WasteManagement.css";
-
-const initialWasteRecords = [
-  {
-    id: "BW-1001",
-    type: "Used Syringe",
-    category: "Sharps",
-    bin: "White",
-    weight: 12.5,
-    department: "Emergency",
-    date: "02 Sep 2026",
-    status: "Pending",
-  },
-  {
-    id: "BW-1002",
-    type: "Blood-Soaked Dressing",
-    category: "Soiled Waste",
-    bin: "Yellow",
-    weight: 18.2,
-    department: "Ward A",
-    date: "02 Sep 2026",
-    status: "Collected",
-  },
-  {
-    id: "BW-1003",
-    type: "Used IV Tube",
-    category: "Contaminated Plastic",
-    bin: "Red",
-    weight: 9.8,
-    department: "ICU",
-    date: "02 Sep 2026",
-    status: "Pending",
-  },
-  {
-    id: "BW-1004",
-    type: "Medicine Vial",
-    category: "Glass Waste",
-    bin: "Blue",
-    weight: 6.4,
-    department: "Pharmacy",
-    date: "01 Sep 2026",
-    status: "Collected",
-  },
-  {
-    id: "BW-1005",
-    type: "Human Anatomical Waste",
-    category: "Anatomical Waste",
-    bin: "Yellow",
-    weight: 21.6,
-    department: "Operation Theatre",
-    date: "01 Sep 2026",
-    status: "Collected",
-  },
-  {
-    id: "BW-1006",
-    type: "Plastic Gloves",
-    category: "Contaminated Plastic",
-    bin: "Red",
-    weight: 14.3,
-    department: "Laboratory",
-    date: "31 Aug 2026",
-    status: "Pending",
-  },
-];
 
 const binInfo = {
   Yellow: {
@@ -84,10 +21,13 @@ const binInfo = {
 };
 
 function WasteManagement() {
-  const [records, setRecords] = useState(initialWasteRecords);
+  const [records, setRecords] = useState([]);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [showModal, setShowModal] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const [formData, setFormData] = useState({
     type: "",
@@ -106,31 +46,125 @@ function WasteManagement() {
     "Anatomical Waste",
   ];
 
+  // =========================================
+  // FETCH WASTE RECORDS FROM BACKEND
+  // =========================================
+
+  const fetchWasteRecords = async () => {
+    try {
+      setLoading(true);
+
+      const token = localStorage.getItem("biotrackToken");
+
+      if (!token) {
+        alert("Authentication token not found. Please login again.");
+        return;
+      }
+
+      const response = await fetch(
+        "http://localhost:5000/api/waste",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(
+          data.message || "Unable to fetch waste records."
+        );
+        return;
+      }
+
+      setRecords(data.records || []);
+    } catch (error) {
+      console.error("Fetch waste records error:", error);
+
+      alert(
+        "Unable to connect to the BioTrack-AI server. Please make sure the backend is running."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load records when page opens
+  useEffect(() => {
+    fetchWasteRecords();
+  }, []);
+
+  // =========================================
+  // CALCULATE TOTALS
+  // =========================================
+
   const totals = useMemo(() => {
     return {
-      total: records.reduce((sum, item) => sum + Number(item.weight), 0),
+      total: records.reduce(
+        (sum, item) => sum + Number(item.weight || 0),
+        0
+      ),
+
       yellow: records
         .filter((item) => item.bin === "Yellow")
-        .reduce((sum, item) => sum + Number(item.weight), 0),
+        .reduce(
+          (sum, item) => sum + Number(item.weight || 0),
+          0
+        ),
+
       red: records
         .filter((item) => item.bin === "Red")
-        .reduce((sum, item) => sum + Number(item.weight), 0),
+        .reduce(
+          (sum, item) => sum + Number(item.weight || 0),
+          0
+        ),
+
       white: records
         .filter((item) => item.bin === "White")
-        .reduce((sum, item) => sum + Number(item.weight), 0),
+        .reduce(
+          (sum, item) => sum + Number(item.weight || 0),
+          0
+        ),
+
       blue: records
         .filter((item) => item.bin === "Blue")
-        .reduce((sum, item) => sum + Number(item.weight), 0),
+        .reduce(
+          (sum, item) => sum + Number(item.weight || 0),
+          0
+        ),
     };
   }, [records]);
+
+  // =========================================
+  // SEARCH + CATEGORY FILTER
+  // =========================================
 
   const filteredRecords = records.filter((record) => {
     const searchText = search.toLowerCase();
 
+    const recordId = (
+      record.wasteId ||
+      record.id ||
+      ""
+    ).toLowerCase();
+
+    const type = (
+      record.type ||
+      ""
+    ).toLowerCase();
+
+    const department = (
+      record.department ||
+      ""
+    ).toLowerCase();
+
     const matchesSearch =
-      record.id.toLowerCase().includes(searchText) ||
-      record.type.toLowerCase().includes(searchText) ||
-      record.department.toLowerCase().includes(searchText);
+      recordId.includes(searchText) ||
+      type.includes(searchText) ||
+      department.includes(searchText);
 
     const matchesCategory =
       categoryFilter === "All" ||
@@ -138,6 +172,10 @@ function WasteManagement() {
 
     return matchesSearch && matchesCategory;
   });
+
+  // =========================================
+  // FORM CHANGE
+  // =========================================
 
   const handleFormChange = (event) => {
     const { name, value } = event.target;
@@ -148,54 +186,144 @@ function WasteManagement() {
     }));
   };
 
-  const handleAddWaste = (event) => {
+  // =========================================
+  // CREATE WASTE RECORD
+  // =========================================
+
+  const handleAddWaste = async (event) => {
     event.preventDefault();
 
     if (
-      !formData.type ||
+      !formData.type.trim() ||
       !formData.weight ||
-      !formData.department
+      !formData.department.trim()
     ) {
       alert("Please fill all required fields.");
       return;
     }
 
-    const newRecord = {
-      id: `BW-${1000 + records.length + 1}`,
-      type: formData.type,
-      category: formData.category,
-      bin: formData.bin,
-      weight: Number(formData.weight),
-      department: formData.department,
-      date: new Date().toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
-      status: "Pending",
-    };
+    try {
+      setSaving(true);
 
-    setRecords((previous) => [newRecord, ...previous]);
+      const token = localStorage.getItem("biotrackToken");
 
-    setFormData({
-      type: "",
-      category: "Sharps",
-      bin: "White",
-      weight: "",
-      department: "",
-    });
+      if (!token) {
+        alert("Authentication token not found. Please login again.");
+        return;
+      }
 
-    setShowModal(false);
+      const response = await fetch(
+        "http://localhost:5000/api/waste",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            type: formData.type.trim(),
+            category: formData.category,
+            bin: formData.bin,
+            weight: Number(formData.weight),
+            department: formData.department.trim(),
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(
+          data.message || "Unable to create waste record."
+        );
+        return;
+      }
+
+      // Add newly created MongoDB record to UI
+      if (data.record) {
+        setRecords((previous) => [
+          data.record,
+          ...previous,
+        ]);
+      }
+
+      setFormData({
+        type: "",
+        category: "Sharps",
+        bin: "White",
+        weight: "",
+        department: "",
+      });
+
+      setShowModal(false);
+
+      alert("Waste record saved successfully.");
+    } catch (error) {
+      console.error("Create waste record error:", error);
+
+      alert(
+        "Unable to connect to the BioTrack-AI server."
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleMarkCollected = (id) => {
-    setRecords((previous) =>
-      previous.map((record) =>
-        record.id === id
-          ? { ...record, status: "Collected" }
-          : record
-      )
-    );
+  // =========================================
+  // MARK WASTE COLLECTED
+  // =========================================
+
+  const handleMarkCollected = async (id) => {
+    try {
+      const token = localStorage.getItem("biotrackToken");
+
+      if (!token) {
+        alert("Authentication token not found. Please login again.");
+        return;
+      }
+
+      const response = await fetch(
+        `http://localhost:5000/api/waste/${id}/status`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            status: "Collected",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(
+          data.message || "Unable to update waste status."
+        );
+        return;
+      }
+
+      if (data.record) {
+        setRecords((previous) =>
+          previous.map((record) =>
+            record._id === id
+              ? data.record
+              : record
+          )
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Update waste status error:",
+        error
+      );
+
+      alert(
+        "Unable to connect to the BioTrack-AI server."
+      );
+    }
   };
 
   return (
@@ -288,25 +416,29 @@ function WasteManagement() {
 
           <div>
             <h3>Waste Records</h3>
+
             <p>
-              {filteredRecords.length} records found
+              {loading
+                ? "Loading records..."
+                : `${filteredRecords.length} record${
+                    filteredRecords.length !== 1
+                      ? "s"
+                      : ""
+                  } found`}
             </p>
           </div>
 
           <div className="waste-filters">
 
-            <div className="waste-search">
-              <span>⌕</span>
-
-              <input
-                type="text"
-                placeholder="Search waste, ID or department..."
-                value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
-                }
-              />
-            </div>
+            <input
+              className="waste-search"
+              type="text"
+              placeholder="Search waste ID, type or department..."
+              value={search}
+              onChange={(event) =>
+                setSearch(event.target.value)
+              }
+            />
 
             <select
               value={categoryFilter}
@@ -325,9 +457,9 @@ function WasteManagement() {
             </select>
 
           </div>
+
         </div>
 
-        {/* TABLE */}
         <div className="waste-table-wrapper">
 
           <table className="waste-table">
@@ -348,7 +480,24 @@ function WasteManagement() {
 
             <tbody>
 
-              {filteredRecords.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td
+                    colSpan="9"
+                    className="empty-waste"
+                  >
+                    <div>
+                      <span>⏳</span>
+                      <strong>
+                        Loading waste records...
+                      </strong>
+                      <p>
+                        Fetching data from MongoDB.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredRecords.length === 0 ? (
                 <tr>
                   <td
                     colSpan="9"
@@ -356,9 +505,12 @@ function WasteManagement() {
                   >
                     <div>
                       <span>♻</span>
-                      <strong>No waste records found</strong>
+                      <strong>
+                        No waste records found
+                      </strong>
                       <p>
-                        Try changing your search or filter.
+                        Try changing your search or
+                        filter, or add a new record.
                       </p>
                     </div>
                   </td>
@@ -368,17 +520,36 @@ function WasteManagement() {
 
                   const bin = binInfo[record.bin];
 
+                  const recordId =
+                    record.wasteId || record.id;
+
+                  const formattedDate =
+                    record.createdAt
+                      ? new Date(
+                          record.createdAt
+                        ).toLocaleDateString(
+                          "en-GB",
+                          {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          }
+                        )
+                      : "-";
+
                   return (
-                    <tr key={record.id}>
+                    <tr key={record._id || recordId}>
 
                       <td>
                         <strong className="waste-id">
-                          {record.id}
+                          {recordId}
                         </strong>
                       </td>
 
                       <td>
-                        <strong>{record.type}</strong>
+                        <strong>
+                          {record.type}
+                        </strong>
                       </td>
 
                       <td>
@@ -388,16 +559,22 @@ function WasteManagement() {
                       </td>
 
                       <td>
-                        <span
-                          className={`bin-badge ${bin.className}`}
-                        >
-                          {bin.icon} {record.bin}
-                        </span>
+                        {bin ? (
+                          <span
+                            className={`bin-badge ${bin.className}`}
+                          >
+                            {bin.icon} {record.bin}
+                          </span>
+                        ) : (
+                          <span>
+                            {record.bin}
+                          </span>
+                        )}
                       </td>
 
                       <td>
                         <strong>
-                          {record.weight} kg
+                          {Number(record.weight).toFixed(1)} kg
                         </strong>
                       </td>
 
@@ -406,13 +583,14 @@ function WasteManagement() {
                       </td>
 
                       <td>
-                        {record.date}
+                        {formattedDate}
                       </td>
 
                       <td>
                         <span
                           className={`waste-status ${
-                            record.status === "Collected"
+                            record.status ===
+                            "Collected"
                               ? "collected"
                               : "pending"
                           }`}
@@ -423,12 +601,15 @@ function WasteManagement() {
                       </td>
 
                       <td>
-                        {record.status === "Pending" ? (
+                        {record.status ===
+                        "Pending" ? (
                           <button
                             className="collect-action"
                             type="button"
                             onClick={() =>
-                              handleMarkCollected(record.id)
+                              handleMarkCollected(
+                                record._id
+                              )
                             }
                           >
                             Mark Collected
@@ -460,10 +641,14 @@ function WasteManagement() {
           <div className="info-icon">✦</div>
 
           <div>
-            <strong>AI Assisted Classification</strong>
+            <strong>
+              AI Assisted Classification
+            </strong>
+
             <p>
               Use AI Detect to identify waste category
-              and recommended disposal bin before recording.
+              and recommended disposal bin before
+              recording.
             </p>
           </div>
         </div>
@@ -472,10 +657,13 @@ function WasteManagement() {
           <div className="info-icon">✓</div>
 
           <div>
-            <strong>Traceable Records</strong>
+            <strong>
+              Traceable Records
+            </strong>
+
             <p>
-              Every waste entry receives a unique ID for
-              future collection and tracking.
+              Every waste entry receives a unique ID
+              for future collection and tracking.
             </p>
           </div>
         </div>
@@ -486,14 +674,20 @@ function WasteManagement() {
       {showModal && (
         <div
           className="waste-modal-overlay"
-          onClick={() => setShowModal(false)}
+          onClick={() =>
+            !saving && setShowModal(false)
+          }
         >
+
           <div
             className="waste-modal"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
 
             <div className="modal-header">
+
               <div>
                 <span>NEW RECORD</span>
                 <h3>Add Waste Record</h3>
@@ -501,38 +695,52 @@ function WasteManagement() {
 
               <button
                 type="button"
-                onClick={() => setShowModal(false)}
+                disabled={saving}
+                onClick={() =>
+                  setShowModal(false)
+                }
               >
                 ×
               </button>
+
             </div>
 
             <form onSubmit={handleAddWaste}>
 
               <div className="form-group">
-                <label>Waste Type *</label>
+
+                <label>
+                  Waste Type *
+                </label>
 
                 <input
                   name="type"
                   value={formData.type}
                   onChange={handleFormChange}
                   placeholder="e.g. Used Syringe"
+                  disabled={saving}
                 />
+
               </div>
 
               <div className="form-row">
 
                 <div className="form-group">
-                  <label>Category *</label>
+
+                  <label>
+                    Category *
+                  </label>
 
                   <select
                     name="category"
                     value={formData.category}
                     onChange={handleFormChange}
+                    disabled={saving}
                   >
                     {categories
                       .filter(
-                        (category) => category !== "All"
+                        (category) =>
+                          category !== "All"
                       )
                       .map((category) => (
                         <option
@@ -543,21 +751,38 @@ function WasteManagement() {
                         </option>
                       ))}
                   </select>
+
                 </div>
 
                 <div className="form-group">
-                  <label>Bin *</label>
+
+                  <label>
+                    Bin *
+                  </label>
 
                   <select
                     name="bin"
                     value={formData.bin}
                     onChange={handleFormChange}
+                    disabled={saving}
                   >
-                    <option value="Yellow">Yellow</option>
-                    <option value="Red">Red</option>
-                    <option value="White">White</option>
-                    <option value="Blue">Blue</option>
+                    <option value="Yellow">
+                      Yellow
+                    </option>
+
+                    <option value="Red">
+                      Red
+                    </option>
+
+                    <option value="White">
+                      White
+                    </option>
+
+                    <option value="Blue">
+                      Blue
+                    </option>
                   </select>
+
                 </div>
 
               </div>
@@ -565,7 +790,10 @@ function WasteManagement() {
               <div className="form-row">
 
                 <div className="form-group">
-                  <label>Weight (kg) *</label>
+
+                  <label>
+                    Weight (kg) *
+                  </label>
 
                   <input
                     type="number"
@@ -575,18 +803,25 @@ function WasteManagement() {
                     value={formData.weight}
                     onChange={handleFormChange}
                     placeholder="e.g. 5.5"
+                    disabled={saving}
                   />
+
                 </div>
 
                 <div className="form-group">
-                  <label>Department *</label>
+
+                  <label>
+                    Department *
+                  </label>
 
                   <input
                     name="department"
                     value={formData.department}
                     onChange={handleFormChange}
                     placeholder="e.g. ICU"
+                    disabled={saving}
                   />
+
                 </div>
 
               </div>
@@ -596,7 +831,10 @@ function WasteManagement() {
                 <button
                   type="button"
                   className="cancel-btn"
-                  onClick={() => setShowModal(false)}
+                  disabled={saving}
+                  onClick={() =>
+                    setShowModal(false)
+                  }
                 >
                   Cancel
                 </button>
@@ -604,8 +842,11 @@ function WasteManagement() {
                 <button
                   type="submit"
                   className="save-waste-btn"
+                  disabled={saving}
                 >
-                  Save Waste Record
+                  {saving
+                    ? "Saving..."
+                    : "Save Waste Record"}
                 </button>
 
               </div>
@@ -613,6 +854,7 @@ function WasteManagement() {
             </form>
 
           </div>
+
         </div>
       )}
 
