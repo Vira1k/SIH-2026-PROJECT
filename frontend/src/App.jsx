@@ -9,9 +9,9 @@ const API_URL =
   import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 function App() {
   const [page, setPage] = useState(() => {
-    const isLoggedIn = localStorage.getItem("biotrackLoggedIn");
+    const token = localStorage.getItem("biotrackToken");
 
-    return isLoggedIn === "true" ? "dashboard" : "login";
+    return token ? "dashboard" : "login";
   });
 
   const [selectedRole, setSelectedRole] = useState("");
@@ -214,8 +214,8 @@ function App() {
 
               <div className="mini-stat">
 
-                <div className="mini-icon">
-                  ♻
+                <div className="mini-icon mini-icon-waste" aria-label="Waste collected">
+                  <span>♻</span>
                 </div>
 
                 <div>
@@ -233,8 +233,8 @@ function App() {
 
               <div className="mini-stat">
 
-                <div className="mini-icon">
-                  AI
+                <div className="mini-icon mini-icon-ai" aria-label="AI detection accuracy">
+                  <span>AI</span>
                 </div>
 
                 <div>
@@ -252,8 +252,8 @@ function App() {
 
               <div className="mini-stat">
 
-                <div className="mini-icon">
-                  04
+                <div className="mini-icon mini-icon-pickup" aria-label="Pending pickups">
+                  <span>04</span>
                 </div>
 
                 <div>

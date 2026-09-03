@@ -64,6 +64,25 @@ const hospitalSchema = new mongoose.Schema(
       required: true,
     },
 
+    // =========================
+    // NOTIFICATION SETTINGS
+    // =========================
+
+    notifications: {
+      type: Boolean,
+      default: true,
+    },
+
+    aiAlerts: {
+      type: Boolean,
+      default: true,
+    },
+
+    pickupAlerts: {
+      type: Boolean,
+      default: true,
+    },
+
     role: {
       type: String,
       default: "Hospital Staff",
