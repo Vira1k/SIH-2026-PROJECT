@@ -135,6 +135,19 @@ function AlertsSection() {
   const [filter, setFilter] = useState("All");
 
   const [alerts, setAlerts] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const [error, setError] = useState("");
+
+  // Keep read state in React state so the dashboard badge updates
+  // immediately when an alert is marked as read.
+  const [readAlertIds, setReadAlertIds] = useState(
+    readStoredAlerts
+  );
+
   useEffect(() => {
     const unreadCount = alerts.filter(
       (alert) => !readAlertIds.includes(alert.id)
@@ -149,16 +162,6 @@ function AlertsSection() {
       new CustomEvent("biotrack-alert-count-updated")
     );
   }, [alerts, readAlertIds]);
-
-  const [loading, setLoading] = useState(true);
-
-  const [refreshing, setRefreshing] = useState(false);
-
-  const [error, setError] = useState("");
-
-  const [readAlertIds, setReadAlertIds] = useState(
-    readStoredAlerts
-  );
 
   const loadAlerts = useCallback(async (isRefresh = false) => {
     const token = getToken();
@@ -449,6 +452,7 @@ function AlertsSection() {
     const allIds = alerts.map((alert) => alert.id);
 
     setReadAlertIds(allIds);
+
     saveReadAlerts(allIds);
   };
 
@@ -458,6 +462,7 @@ function AlertsSection() {
 
   const clearReadHistory = () => {
     setReadAlertIds([]);
+
     saveReadAlerts([]);
   };
 
