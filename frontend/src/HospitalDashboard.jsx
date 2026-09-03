@@ -153,6 +153,7 @@ function HospitalDashboard() {
           <DashboardOverview
             setActiveMenu={setActiveMenu}
             hospitalName={hospitalName}
+            alertCount={alertCount}
           />
         );
     }
@@ -210,7 +211,11 @@ function HospitalDashboard() {
           title="Alerts"
         >
           <span>🔔</span>
-          <span className="mobile-notification-dot">3</span>
+          {alertCount > 0 && (
+            <span className="mobile-notification-dot">
+              {alertCount > 99 ? "99+" : alertCount}
+            </span>
+          )}
         </button>
 
         <button
@@ -510,7 +515,7 @@ function HospitalDashboard() {
    DASHBOARD OVERVIEW
 ========================================================= */
 
-function DashboardOverview({ setActiveMenu, hospitalName }) {
+function DashboardOverview({ setActiveMenu, hospitalName, alertCount }) {
   return (
     <>
       {/* STAT CARDS */}
@@ -826,7 +831,9 @@ function DashboardOverview({ setActiveMenu, hospitalName }) {
               className="alert-badge alert-badge-button"
               onClick={() => setActiveMenu("Alerts")}
             >
-              3 New
+              {alertCount > 0
+                ? `${alertCount > 99 ? "99+" : alertCount} New`
+                : "No New"}
             </button>
 
           </div>
