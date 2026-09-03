@@ -1,48 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
+import "./CollectionSection.css";
 
 const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000/api";
 
-const getToken = () => localStorage.getItem("biotrackToken");
+const getToken = () =>
+  localStorage.getItem("biotrackToken");
 
 const authHeaders = () => ({
   "Content-Type": "application/json",
   Authorization: `Bearer ${getToken()}`,
 });
 
-const formatDate = (value) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
-
-const formatDateTime = (value) => {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-};
-
 function CollectionSection() {
   const [collections, setCollections] = useState([]);
   const [wasteRecords, setWasteRecords] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
   const [showForm, setShowForm] = useState(false);
-  const [updatingId, setUpdatingId] = useState(null);
 
   const [form, setForm] = useState({
     wasteId: "",
@@ -54,45 +35,74 @@ function CollectionSection() {
   });
 
   const loadData = async () => {
-    setLoading(true);
-    setError("");
-
     try {
+      setLoading(true);
+      setError("");
+
       const token = getToken();
 
       if (!token) {
-        throw new Error("Authentication required. Please login again.");
+        throw new Error(
+          "Authentication token not found. Please login again."
+        );
       }
 
-      const [collectionsResponse, wasteResponse] = await Promise.all([
-        fetch(`${API_URL}/collections`, {
-          headers: authHeaders(),
-        }),
-        fetch(`${API_URL}/waste`, {
-          headers: authHeaders(),
-        }),
-      ]);
+      const [collectionsResponse, wasteResponse] =
+        await Promise.all([
+          fetch(`${API_URL}/collections`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
 
-      const collectionsData = await collectionsResponse.json().catch(() => ({}));
-      const wasteData = await wasteResponse.json().catch(() => ({}));
+          fetch(`${API_URL}/waste`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
+
+      const collectionsData =
+        await collectionsResponse.json();
+
+      const wasteData =
+        await wasteResponse.json();
 
       if (!collectionsResponse.ok) {
         throw new Error(
-          collectionsData.message || "Unable to load collection records."
+          collectionsData.message ||
+            "Failed to load collections."
         );
       }
 
       if (!wasteResponse.ok) {
         throw new Error(
-          wasteData.message || "Unable to load waste records."
+          wasteData.message ||
+            "Failed to load waste records."
         );
       }
 
-      setCollections(Array.isArray(collectionsData.data) ? collectionsData.data : []);
-      setWasteRecords(Array.isArray(wasteData.data) ? wasteData.data : []);
+        const collectionList = Array.isArray(collectionsData.collections)
+          ? collectionsData.collections
+          : Array.isArray(collectionsData.data)
+          ? collectionsData.data
+          : Array.isArray(collectionsData.records)
+          ? collectionsData.records
+          : [];
+
+      const wasteList = Array.isArray(wasteData.data)
+        ? wasteData.data
+        : Array.isArray(wasteData.records)
+        ? wasteData.records
+        : [];
+
+      setCollections(collectionList);
+      setWasteRecords(wasteList);
     } catch (err) {
-      console.error("Collection load error:", err);
-      setError(err.message || "Unable to load collection data.");
+      setError(
+        err.message ||
+          "Unable to load collection data."
+      );
     } finally {
       setLoading(false);
     }
@@ -102,144 +112,192 @@ function CollectionSection() {
     loadData();
   }, []);
 
-  const activeWaste = useMemo(
-    () =>
-      wasteRecords.filter(
-        (item) =>
-          !["Disposed", "Collected", "Processing"].includes(item.status)
-      ),
-    [wasteRecords]
-  );
+  const eligibleWaste = useMemo(() => {
+    return wasteRecords.filter((item) => {
+      const status = String(item.status || "")
+        .trim()
+        .toLowerCase();
 
-  const totalCollections = collections.length;
-  const scheduledCount = collections.filter(
-    (item) => item.status === "Scheduled"
-  ).length;
-  const inTransitCount = collections.filter(
-    (item) => item.status === "In Transit"
-  ).length;
-  const completedCount = collections.filter(
-    (item) => item.status === "Completed"
-  ).length;
+      return status === "pending";
+    });
+  }, [wasteRecords]);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
+  const stats = useMemo(() => {
+    const completed = collections.filter(
+      (item) =>
+        item.status === "Completed"
+    ).length;
+
+    const scheduled = collections.filter(
+      (item) =>
+        item.status === "Scheduled"
+    ).length;
+
+    const inTransit = collections.filter(
+      (item) =>
+        item.status === "In Transit"
+    ).length;
+
+    return {
+      total: collections.length,
+      scheduled,
+      inTransit,
+      completed,
+    };
+  }, [collections]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
+
     setError("");
     setSuccess("");
   };
 
-  const resetForm = () => {
-    setForm({
-      wasteId: "",
-      scheduledDate: "",
-      collectorName: "",
-      collectorPhone: "",
-      vehicleNumber: "",
-      notes: "",
-    });
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const requestPickup = async (event) => {
-    event.preventDefault();
     setError("");
     setSuccess("");
 
     if (!form.wasteId) {
-      setError("Please select a waste record.");
+      setError(
+        "Please select a waste record."
+      );
       return;
     }
 
     if (!form.scheduledDate) {
-      setError("Please select a collection date and time.");
+      setError(
+        "Please select collection date and time."
+      );
       return;
     }
 
     if (!form.collectorName.trim()) {
-      setError("Please enter the collector name.");
+      setError(
+        "Please enter collector name."
+      );
       return;
     }
 
-    setSaving(true);
-
     try {
-      const response = await fetch(`${API_URL}/collections`, {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({
-          wasteId: form.wasteId,
-          scheduledDate: new Date(form.scheduledDate).toISOString(),
-          collectorName: form.collectorName.trim(),
-          collectorPhone: form.collectorPhone.trim(),
-          vehicleNumber: form.vehicleNumber.trim(),
-          notes: form.notes.trim(),
-        }),
-      });
+      setSaving(true);
 
-      const data = await response.json().catch(() => ({}));
+      const response = await fetch(
+        `${API_URL}/collections`,
+        {
+          method: "POST",
+          headers: authHeaders(),
+          body: JSON.stringify({
+            wasteId: form.wasteId,
+            scheduledDate: new Date(
+              form.scheduledDate
+            ).toISOString(),
+            collectorName:
+              form.collectorName.trim(),
+            collectorPhone:
+              form.collectorPhone.trim(),
+            vehicleNumber:
+              form.vehicleNumber.trim(),
+            notes: form.notes.trim(),
+          }),
+        }
+      );
+
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to schedule collection.");
+        throw new Error(
+          data.message ||
+            "Failed to schedule collection."
+        );
       }
 
-      setSuccess("Collection scheduled successfully.");
-      resetForm();
+      setSuccess(
+        "Collection scheduled successfully."
+      );
+
+      setForm({
+        wasteId: "",
+        scheduledDate: "",
+        collectorName: "",
+        collectorPhone: "",
+        vehicleNumber: "",
+        notes: "",
+      });
+
       setShowForm(false);
+
       await loadData();
     } catch (err) {
-      console.error("Collection create error:", err);
-      setError(err.message || "Unable to schedule collection.");
+      setError(
+        err.message ||
+          "Unable to schedule collection."
+      );
     } finally {
       setSaving(false);
     }
   };
 
-  const updateStatus = async (collectionId, status) => {
-    setError("");
-    setSuccess("");
-    setUpdatingId(collectionId);
-
+  const updateStatus = async (
+    collectionId,
+    status
+  ) => {
     try {
+      setError("");
+      setSuccess("");
+
       const response = await fetch(
         `${API_URL}/collections/${collectionId}/status`,
         {
           method: "PATCH",
           headers: authHeaders(),
-          body: JSON.stringify({ status }),
+          body: JSON.stringify({
+            status,
+          }),
         }
       );
 
-      const data = await response.json().catch(() => ({}));
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to update collection status.");
+        throw new Error(
+          data.message ||
+            "Failed to update collection status."
+        );
       }
 
-      setSuccess(`Collection status updated to ${status}.`);
+      setSuccess(
+        `Collection marked as ${status}.`
+      );
+
       await loadData();
     } catch (err) {
-      console.error("Collection status error:", err);
-      setError(err.message || "Unable to update collection status.");
-    } finally {
-      setUpdatingId(null);
+      setError(
+        err.message ||
+          "Unable to update collection status."
+      );
     }
   };
 
-  const deleteCollection = async (collectionId) => {
+  const deleteCollection = async (
+    collectionId
+  ) => {
     const confirmed = window.confirm(
-      "Are you sure you want to delete this collection schedule?"
+      "Are you sure you want to cancel this collection?"
     );
 
     if (!confirmed) return;
 
-    setError("");
-    setSuccess("");
-    setUpdatingId(collectionId);
-
     try {
+      setError("");
+      setSuccess("");
+
       const response = await fetch(
         `${API_URL}/collections/${collectionId}`,
         {
@@ -248,121 +306,221 @@ function CollectionSection() {
         }
       );
 
-      const data = await response.json().catch(() => ({}));
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to delete collection.");
+        throw new Error(
+          data.message ||
+            "Failed to cancel collection."
+        );
       }
 
-      setSuccess("Collection schedule deleted.");
+      setSuccess(
+        "Collection cancelled successfully."
+      );
+
       await loadData();
     } catch (err) {
-      console.error("Collection delete error:", err);
-      setError(err.message || "Unable to delete collection.");
-    } finally {
-      setUpdatingId(null);
+      setError(
+        err.message ||
+          "Unable to cancel collection."
+      );
     }
   };
 
-  const getNextStatus = (status) => {
-    if (status === "Scheduled") return "Collected";
-    if (status === "Collected") return "In Transit";
-    if (status === "In Transit") return "Completed";
-    return null;
+  const formatDate = (dateValue) => {
+    if (!dateValue) return "—";
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+      return "—";
+    }
+
+    return date.toLocaleString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const getWaste = (collection) => {
+    if (!collection?.waste) {
+      return null;
+    }
+
+    return collection.waste;
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case "Completed":
+        return "completed";
+
+      case "In Transit":
+        return "in-transit";
+
+      case "Collected":
+        return "collected";
+
+      case "Cancelled":
+        return "cancelled";
+
+      case "Scheduled":
+      default:
+        return "scheduled";
+    }
   };
 
   return (
-    <div className="module-page">
-      <div className="module-header">
+    <div className="collection-module">
+
+      {/* HEADER */}
+
+      <div className="collection-page-header">
+
         <div>
-          <span className="panel-label">COLLECTION MANAGEMENT</span>
-          <h2>Waste Collection</h2>
+          <span className="collection-eyebrow">
+            COLLECTION MANAGEMENT
+          </span>
+
+          <h2>
+            Waste Collection
+          </h2>
+
           <p>
-            Schedule pickups, assign collectors, and track collection status.
+            Schedule pickups, assign collectors,
+            and track collection status.
           </p>
         </div>
 
         <button
           type="button"
-          className="primary-action"
-          onClick={() => {
-            setShowForm((prev) => !prev);
+          className="collection-primary-btn"
+          onClick={async () => {
+            const nextShowForm = !showForm;
+            setShowForm(nextShowForm);
             setError("");
             setSuccess("");
+
+            if (nextShowForm) {
+              await loadData();
+            }
           }}
         >
-          {showForm ? "× Close" : "+ Request Pickup"}
+          {showForm
+            ? "× Close Form"
+            : "+ Request Pickup"}
         </button>
+
       </div>
 
+
+      {/* MESSAGES */}
+
       {error && (
-        <div className="module-message error-message" role="alert">
-          {error}
+        <div className="collection-message collection-error">
+          <span>!</span>
+          <div>{error}</div>
         </div>
       )}
 
       {success && (
-        <div className="module-message success-message" role="status">
-          {success}
+        <div className="collection-message collection-success">
+          <span>✓</span>
+          <div>{success}</div>
         </div>
       )}
 
-      <div className="module-summary">
-        <div className="mini-stat">
-          <span>▣</span>
-          <div>
-            <small>Total Pickups</small>
-            <strong>{totalCollections}</strong>
-          </div>
-        </div>
 
-        <div className="mini-stat">
-          <span>◷</span>
-          <div>
-            <small>Scheduled</small>
-            <strong>{scheduledCount}</strong>
-          </div>
-        </div>
-
-        <div className="mini-stat">
-          <span>→</span>
-          <div>
-            <small>In Transit</small>
-            <strong>{inTransitCount}</strong>
-          </div>
-        </div>
-
-        <div className="mini-stat">
-          <span>✓</span>
-          <div>
-            <small>Completed</small>
-            <strong>{completedCount}</strong>
-          </div>
-        </div>
-      </div>
+      {/* FORM */}
 
       {showForm && (
-        <form className="filter-panel collection-form" onSubmit={requestPickup}>
+        <form
+          className="collection-form-card"
+          onSubmit={handleSubmit}
+        >
+
+          <div className="collection-form-header">
+
+            <div>
+              <span className="collection-form-label">
+                NEW REQUEST
+              </span>
+
+              <h3>
+                Schedule Collection
+              </h3>
+
+              <p>
+                Select a pending waste record and
+                assign the collection details.
+              </p>
+            </div>
+
+          </div>
+
+
           <div className="collection-form-grid">
-            <label>
-              Waste Record
+
+            {/* WASTE */}
+
+            <label className="collection-field">
+
+              <span>
+                Waste Record
+                <b>*</b>
+              </span>
+
               <select
                 name="wasteId"
                 value={form.wasteId}
                 onChange={handleChange}
                 required
               >
-                <option value="">Select waste record</option>
-                {activeWaste.map((item) => (
-                  <option key={item._id} value={item._id}>
-                    {item.wasteId} — {item.type} — {item.weight} kg — {item.bin}
+                <option value="">
+                  Select waste record
+                </option>
+
+                {eligibleWaste.length === 0 ? (
+                  <option disabled>
+                    No eligible waste records
                   </option>
-                ))}
+                ) : (
+                  eligibleWaste.map((item) => (
+                    <option
+                      key={item._id}
+                      value={item._id}
+                    >
+                      {item.wasteId} —{" "}
+                      {item.type} —{" "}
+                      {item.weight} kg —{" "}
+                      {item.department}
+                    </option>
+                  ))
+                )}
+
               </select>
+
+              <small>
+                Only pending waste records are
+                available for scheduling.
+              </small>
+
             </label>
 
-            <label>
-              Scheduled Date & Time
+
+            {/* DATE */}
+
+            <label className="collection-field">
+
+              <span>
+                Collection Date & Time
+                <b>*</b>
+              </span>
+
               <input
                 type="datetime-local"
                 name="scheduledDate"
@@ -370,211 +528,545 @@ function CollectionSection() {
                 onChange={handleChange}
                 required
               />
+
             </label>
 
-            <label>
-              Collector Name
+
+            {/* COLLECTOR */}
+
+            <label className="collection-field">
+
+              <span>
+                Collector Name
+                <b>*</b>
+              </span>
+
               <input
                 type="text"
                 name="collectorName"
+                placeholder="Enter collector name"
                 value={form.collectorName}
                 onChange={handleChange}
-                placeholder="Enter collector name"
                 required
               />
+
             </label>
 
-            <label>
-              Collector Phone
+
+            {/* PHONE */}
+
+            <label className="collection-field">
+
+              <span>
+                Collector Phone
+              </span>
+
               <input
                 type="tel"
                 name="collectorPhone"
+                placeholder="Enter phone number"
                 value={form.collectorPhone}
                 onChange={handleChange}
-                placeholder="Enter phone number"
               />
+
             </label>
 
-            <label>
-              Vehicle Number
+
+            {/* VEHICLE */}
+
+            <label className="collection-field">
+
+              <span>
+                Vehicle Number
+              </span>
+
               <input
                 type="text"
                 name="vehicleNumber"
+                placeholder="Example: KA 01 AB 1234"
                 value={form.vehicleNumber}
                 onChange={handleChange}
-                placeholder="e.g. KA01AB1234"
               />
+
             </label>
 
-            <label>
-              Notes
-              <input
-                type="text"
+
+            {/* NOTES */}
+
+            <label className="collection-field collection-field-full">
+
+              <span>
+                Notes
+              </span>
+
+              <textarea
                 name="notes"
+                placeholder="Additional collection instructions..."
                 value={form.notes}
                 onChange={handleChange}
-                placeholder="Optional notes"
+                rows="4"
               />
+
             </label>
+
           </div>
 
+
           <div className="collection-form-actions">
+
             <button
               type="button"
-              className="secondary-action"
+              className="collection-secondary-btn"
               onClick={() => {
-                resetForm();
                 setShowForm(false);
+                setError("");
+                setSuccess("");
               }}
-              disabled={saving}
             >
               Cancel
             </button>
 
-            <button type="submit" className="primary-action" disabled={saving}>
-              {saving ? "Scheduling..." : "Schedule Collection"}
+            <button
+              type="submit"
+              className="collection-primary-btn"
+              disabled={saving}
+            >
+              {saving
+                ? "Scheduling..."
+                : "Schedule Collection"}
             </button>
+
           </div>
 
-          {activeWaste.length === 0 && (
-            <p className="form-hint">
-              No eligible waste records are available. Add a Pending waste
-              record from the Waste page first.
-            </p>
-          )}
         </form>
       )}
 
-      <div className="table-panel">
-        <div className="table-title">
-          <h3>Collection Schedule</h3>
-          <span>{collections.length} records</span>
-        </div>
 
-        {loading ? (
-          <div className="empty-state">Loading collection records...</div>
-        ) : collections.length === 0 ? (
-          <div className="empty-state">
-            <strong>No collection schedules yet</strong>
-            <p>
-              Click <b>Request Pickup</b> to schedule collection for a waste
-              record.
-            </p>
-          </div>
-        ) : (
-          <div className="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Collection ID</th>
-                  <th>Waste</th>
-                  <th>Department</th>
-                  <th>Weight</th>
-                  <th>Collector</th>
-                  <th>Scheduled</th>
-                  <th>Status</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
+      {/* LOADING */}
 
-              <tbody>
-                {collections.map((item) => {
-                  const waste = item.waste || {};
-                  const nextStatus = getNextStatus(item.status);
+      {loading ? (
 
-                  return (
-                    <tr key={item._id}>
-                      <td>
-                        <strong>{item.collectionId || "—"}</strong>
-                      </td>
+        <div className="collection-loading-card">
+          <div className="collection-spinner"></div>
 
-                      <td>
-                        <strong>{waste.wasteId || "—"}</strong>
-                        <small className="table-subtext">
-                          {waste.type || "Waste record"}
-                        </small>
-                      </td>
+          <h3>
+            Loading collection data...
+          </h3>
 
-                      <td>{waste.department || "—"}</td>
-
-                      <td>
-                        {waste.weight !== undefined
-                          ? `${waste.weight} kg`
-                          : "—"}
-                      </td>
-
-                      <td>
-                        {item.collectorName || "—"}
-                        {item.vehicleNumber && (
-                          <small className="table-subtext">
-                            {item.vehicleNumber}
-                          </small>
-                        )}
-                      </td>
-
-                      <td>{formatDateTime(item.scheduledDate)}</td>
-
-                      <td>
-                        <span
-                          className={`table-status ${String(
-                            item.status || ""
-                          )
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")}`}
-                        >
-                          {item.status || "—"}
-                        </span>
-                      </td>
-
-                      <td>
-                        <div className="collection-actions">
-                          {nextStatus && (
-                            <button
-                              type="button"
-                              className="small-action"
-                              disabled={updatingId === item._id}
-                              onClick={() =>
-                                updateStatus(item._id, nextStatus)
-                              }
-                            >
-                              {updatingId === item._id
-                                ? "Updating..."
-                                : nextStatus}
-                            </button>
-                          )}
-
-                          {item.status === "Scheduled" && (
-                            <button
-                              type="button"
-                              className="small-danger"
-                              disabled={updatingId === item._id}
-                              onClick={() => deleteCollection(item._id)}
-                            >
-                              Delete
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      <div className="collection-info-card">
-        <div>
-          <strong>Collection workflow</strong>
           <p>
-            Scheduled → Collected → In Transit → Completed. Completing a
-            collection automatically moves the related waste toward disposal
-            in the backend.
+            Please wait while we fetch your
+            hospital records.
           </p>
         </div>
-        <span>{formatDate(new Date())}</span>
-      </div>
+
+      ) : (
+
+        <>
+
+          {/* STATS */}
+
+          <div className="collection-stats">
+
+            <div className="collection-stat-card">
+              <div className="collection-stat-icon total">
+                ▣
+              </div>
+
+              <div>
+                <span>
+                  Total Pickups
+                </span>
+
+                <strong>
+                  {stats.total}
+                </strong>
+              </div>
+            </div>
+
+
+            <div className="collection-stat-card">
+              <div className="collection-stat-icon scheduled">
+                ◷
+              </div>
+
+              <div>
+                <span>
+                  Scheduled
+                </span>
+
+                <strong>
+                  {stats.scheduled}
+                </strong>
+              </div>
+            </div>
+
+
+            <div className="collection-stat-card">
+              <div className="collection-stat-icon transit">
+                →
+              </div>
+
+              <div>
+                <span>
+                  In Transit
+                </span>
+
+                <strong>
+                  {stats.inTransit}
+                </strong>
+              </div>
+            </div>
+
+
+            <div className="collection-stat-card">
+              <div className="collection-stat-icon completed">
+                ✓
+              </div>
+
+              <div>
+                <span>
+                  Completed
+                </span>
+
+                <strong>
+                  {stats.completed}
+                </strong>
+              </div>
+            </div>
+
+          </div>
+
+
+          {/* COLLECTION LIST */}
+
+          <section className="collection-list-card">
+
+            <div className="collection-list-header">
+
+              <div>
+                <span className="collection-eyebrow">
+                  COLLECTION SCHEDULE
+                </span>
+
+                <h3>
+                  Scheduled Pickups
+                </h3>
+
+                <p>
+                  Manage your hospital's active
+                  collection operations.
+                </p>
+              </div>
+
+              <span className="collection-record-count">
+                {collections.length}{" "}
+                {collections.length === 1
+                  ? "record"
+                  : "records"}
+              </span>
+
+            </div>
+
+
+            {collections.length === 0 ? (
+
+              <div className="collection-empty">
+
+                <div className="collection-empty-icon">
+                  ▣
+                </div>
+
+                <h3>
+                  No collection schedules yet
+                </h3>
+
+                <p>
+                  Click{" "}
+                  <strong>
+                    Request Pickup
+                  </strong>{" "}
+                  to schedule collection for a
+                  waste record.
+                </p>
+
+                <button
+                  type="button"
+                  className="collection-primary-btn"
+                  onClick={async () => {
+                    setShowForm(true);
+                    setError("");
+                    setSuccess("");
+                    await loadData();
+                  }}
+                >
+                  + Request Pickup
+                </button>
+
+              </div>
+
+            ) : (
+
+              <div className="collection-table-wrapper">
+
+                <table className="collection-table">
+
+                  <thead>
+                    <tr>
+                      <th>Collection</th>
+                      <th>Waste</th>
+                      <th>Schedule</th>
+                      <th>Collector</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+
+                    {collections.map(
+                      (collection) => {
+
+                        const waste =
+                          getWaste(
+                            collection
+                          );
+
+                        return (
+                          <tr
+                            key={
+                              collection._id
+                            }
+                          >
+
+                            {/* COLLECTION ID */}
+
+                            <td>
+                              <div className="collection-id">
+                                {collection.collectionId ||
+                                  "—"}
+                              </div>
+
+                              <div className="collection-subtext">
+                                Created{" "}
+                                {formatDate(
+                                  collection.createdAt
+                                )}
+                              </div>
+                            </td>
+
+
+                            {/* WASTE */}
+
+                            <td>
+
+                              <div className="collection-waste-name">
+                                {waste?.type ||
+                                  "Biomedical Waste"}
+                              </div>
+
+                              <div className="collection-subtext">
+
+                                {waste?.wasteId ||
+                                  "—"}
+
+                                {waste?.bin && (
+                                  <>
+                                    {" • "}
+                                    {waste.bin}
+                                  </>
+                                )}
+
+                              </div>
+
+                            </td>
+
+
+                            {/* SCHEDULE */}
+
+                            <td>
+
+                              <div className="collection-date">
+                                {formatDate(
+                                  collection.scheduledDate
+                                )}
+                              </div>
+
+                            </td>
+
+
+                            {/* COLLECTOR */}
+
+                            <td>
+
+                              <div className="collection-waste-name">
+                                {collection.collectorName ||
+                                  "—"}
+                              </div>
+
+                              <div className="collection-subtext">
+
+                                {collection.collectorPhone ||
+                                  "No phone"}
+
+                                {collection.vehicleNumber && (
+                                  <>
+                                    {" • "}
+                                    {
+                                      collection.vehicleNumber
+                                    }
+                                  </>
+                                )}
+
+                              </div>
+
+                            </td>
+
+
+                            {/* STATUS */}
+
+                            <td>
+
+                              <span
+                                className={`collection-status ${getStatusClass(
+                                  collection.status
+                                )}`}
+                              >
+                                <span></span>
+
+                                {
+                                  collection.status
+                                }
+                              </span>
+
+                            </td>
+
+
+                            {/* ACTIONS */}
+
+                            <td>
+
+                              <div className="collection-actions">
+
+                                {collection.status ===
+                                  "Scheduled" && (
+                                  <button
+                                    type="button"
+                                    className="collection-action-btn blue"
+                                    onClick={() =>
+                                      updateStatus(
+                                        collection._id,
+                                        "Collected"
+                                      )
+                                    }
+                                  >
+                                    Mark Collected
+                                  </button>
+                                )}
+
+
+                                {collection.status ===
+                                  "Collected" && (
+                                  <button
+                                    type="button"
+                                    className="collection-action-btn blue"
+                                    onClick={() =>
+                                      updateStatus(
+                                        collection._id,
+                                        "In Transit"
+                                      )
+                                    }
+                                  >
+                                    In Transit
+                                  </button>
+                                )}
+
+
+                                {collection.status ===
+                                  "In Transit" && (
+                                  <button
+                                    type="button"
+                                    className="collection-action-btn green"
+                                    onClick={() =>
+                                      updateStatus(
+                                        collection._id,
+                                        "Completed"
+                                      )
+                                    }
+                                  >
+                                    Complete
+                                  </button>
+                                )}
+
+
+                                {[
+                                  "Scheduled",
+                                  "Collected",
+                                  "In Transit",
+                                ].includes(
+                                  collection.status
+                                ) && (
+                                  <button
+                                    type="button"
+                                    className="collection-action-btn danger"
+                                    onClick={() =>
+                                      deleteCollection(
+                                        collection._id
+                                      )
+                                    }
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
+
+                              </div>
+
+                            </td>
+
+                          </tr>
+                        );
+                      }
+                    )}
+
+                  </tbody>
+
+                </table>
+
+              </div>
+
+            )}
+
+          </section>
+
+
+          {/* WORKFLOW */}
+
+          <div className="collection-workflow">
+
+            <div className="collection-workflow-icon">
+              ✓
+            </div>
+
+            <div>
+
+              <strong>
+                Collection workflow
+              </strong>
+
+              <p>
+                Scheduled → Collected → In Transit
+                → Completed. Completing a collection
+                automatically moves the related waste
+                toward disposal in the backend.
+              </p>
+
+            </div>
+
+          </div>
+
+        </>
+
+      )}
+
     </div>
   );
 }

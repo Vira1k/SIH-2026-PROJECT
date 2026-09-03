@@ -2,7 +2,10 @@ import { useState } from "react";
 import "./HospitalDashboard.css";
 import AIDetection from "./AIDetection";
 import WasteManagement from "./WasteManagement";
-import CollectionSection from "./CollectionSection";
+import CollectionSectionAPI from "./CollectionSection";
+import TrackingSectionAPI from "./TrackingSection";
+import AnalyticsSectionAPI from "./AnalyticsSection";
+import AlertsSectionAPI from "./AlertsSection";
 
 function HospitalDashboard() {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
@@ -87,16 +90,16 @@ function HospitalDashboard() {
         return <WasteManagement />;
 
       case "Collection":
-        return <CollectionSection />;
+        return <CollectionSectionAPI />;
 
       case "Tracking":
-        return <TrackingSection />;
+        return <TrackingSectionAPI />;
 
       case "Analytics":
-        return <AnalyticsSection />;
+        return <AnalyticsSectionAPI />;
 
       case "Alerts":
-        return <AlertsSection />;
+        return <AlertsSectionAPI />;
 
       case "Profile":
         return (

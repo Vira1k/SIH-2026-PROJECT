@@ -3,7 +3,7 @@ import "./WasteManagement.css";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  "https://sih-2026-project-ulga.onrender.com/api";
+  "https://sih-2026-project-u1ga.onrender.com/api";
 
 const binInfo = {
   Yellow: {
