@@ -8,7 +8,7 @@ const demoResults = [
     bin: "White",
     risk: "High",
     confidence: "96.4%",
-    icon: "💉",
+    icon: "ðŸ’‰",
     color: "white",
     guidance: [
       "Do not recap or bend the syringe.",
@@ -22,7 +22,7 @@ const demoResults = [
     bin: "Yellow",
     risk: "High",
     confidence: "94.8%",
-    icon: "🩹",
+    icon: "ðŸ©¹",
     color: "yellow",
     guidance: [
       "Handle using appropriate protective equipment.",
@@ -36,7 +36,7 @@ const demoResults = [
     bin: "Red",
     risk: "Medium",
     confidence: "92.7%",
-    icon: "🧪",
+    icon: "ðŸ§ª",
     color: "red",
     guidance: [
       "Separate contaminated plastic from other waste.",
@@ -50,7 +50,7 @@ const demoResults = [
     bin: "Blue",
     risk: "Medium",
     confidence: "91.9%",
-    icon: "💊",
+    icon: "ðŸ’Š",
     color: "blue",
     guidance: [
       "Keep glass containers separated from general waste.",
@@ -62,6 +62,9 @@ const demoResults = [
 
 function AIDetection() {
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+
+  const [showSourcePicker, setShowSourcePicker] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -108,7 +111,17 @@ function AIDetection() {
   };
 
   const handleUploadClick = () => {
+    setShowSourcePicker(true);
+  };
+
+  const handleGallerySelect = () => {
+    setShowSourcePicker(false);
     fileInputRef.current?.click();
+  };
+
+  const handleCameraSelect = () => {
+    setShowSourcePicker(false);
+    cameraInputRef.current?.click();
   };
 
   const handleAnalyze = () => {
@@ -178,7 +191,64 @@ function AIDetection() {
   };
 
   return (
-    <section className="ai-detection-page">
+    <>
+      {showSourcePicker && (
+        <div
+          className="ai-source-picker-backdrop"
+          onClick={() => setShowSourcePicker(false)}
+          role="presentation"
+        >
+          <div
+            className="ai-source-picker"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ai-source-picker-title"
+          >
+            <button
+              type="button"
+              className="ai-source-picker-close"
+              onClick={() => setShowSourcePicker(false)}
+              aria-label="Close image source picker"
+            >
+              ×
+            </button>
+
+            <div className="ai-source-picker-icon">✦</div>
+
+            <h3 id="ai-source-picker-title">Choose Image Source</h3>
+            <p>Take a new photo or select an existing waste image.</p>
+
+            <div className="ai-source-options">
+              <button
+                type="button"
+                className="ai-source-option"
+                onClick={handleCameraSelect}
+              >
+                <span className="ai-source-option-icon">📷</span>
+                <span>
+                  <strong>Take Photo</strong>
+                  <small>Use your camera</small>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                className="ai-source-option"
+                onClick={handleGallerySelect}
+              >
+                <span className="ai-source-option-icon">🖼️</span>
+                <span>
+                  <strong>Choose from Gallery</strong>
+                  <small>Select an existing image</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <section className="ai-detection-page">
 
       {/* ================= HEADER ================= */}
 
@@ -186,7 +256,7 @@ function AIDetection() {
 
         <div>
           <div className="ai-title-row">
-            <div className="ai-title-icon">✦</div>
+            <div className="ai-title-icon">âœ¦</div>
 
             <div>
               <span className="ai-eyebrow">
@@ -251,7 +321,7 @@ function AIDetection() {
             {!previewUrl ? (
               <>
                 <div className="upload-big-icon">
-                  ↑
+                  â†‘
                 </div>
 
                 <h4>
@@ -259,8 +329,8 @@ function AIDetection() {
                 </h4>
 
                 <p>
-                  Drag & drop your waste image here
-                  or select a file from your device.
+                  Take a photo with your camera or select a file
+                  from your device.
                 </p>
 
                 <button
@@ -272,7 +342,7 @@ function AIDetection() {
                 </button>
 
                 <span className="upload-limit">
-                  JPG, JPEG or PNG • Maximum 10MB
+                  JPG, JPEG or PNG â€¢ Maximum 10MB
                 </span>
               </>
             ) : (
@@ -299,10 +369,21 @@ function AIDetection() {
           </div>
 
 
+          {/* Gallery picker */}
           <input
             ref={fileInputRef}
             type="file"
             accept="image/jpeg,image/png,image/jpg"
+            onChange={handleFileSelect}
+            hidden
+          />
+
+          {/* Camera picker — opens the device camera on supported mobile browsers */}
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
             onChange={handleFileSelect}
             hidden
           />
@@ -330,7 +411,7 @@ function AIDetection() {
                 className="remove-file"
                 onClick={handleReset}
               >
-                ×
+                Ã—
               </button>
 
             </div>
@@ -339,7 +420,7 @@ function AIDetection() {
 
           {error && (
             <div className="ai-error">
-              ⚠ {error}
+              âš  {error}
             </div>
           )}
 
@@ -357,7 +438,7 @@ function AIDetection() {
               </>
             ) : (
               <>
-                ✦ Analyze Waste
+                âœ¦ Analyze Waste
               </>
             )}
           </button>
@@ -392,7 +473,7 @@ function AIDetection() {
             <div className="empty-result">
 
               <div className="ai-scan-animation">
-                <span>✦</span>
+                <span>âœ¦</span>
               </div>
 
               <h4>
@@ -407,10 +488,10 @@ function AIDetection() {
 
               <div className="result-features">
 
-                <span>✓ Waste Category</span>
-                <span>✓ Recommended Bin</span>
-                <span>✓ Risk Assessment</span>
-                <span>✓ AI Confidence</span>
+                <span>âœ“ Waste Category</span>
+                <span>âœ“ Recommended Bin</span>
+                <span>âœ“ Risk Assessment</span>
+                <span>âœ“ AI Confidence</span>
 
               </div>
 
@@ -437,15 +518,15 @@ function AIDetection() {
               <div className="analysis-steps">
 
                 <span className="completed">
-                  ✓ Image received
+                  âœ“ Image received
                 </span>
 
                 <span className="active-step">
-                  ◌ Identifying waste
+                  â—Œ Identifying waste
                 </span>
 
                 <span>
-                  ○ Generating recommendation
+                  â—‹ Generating recommendation
                 </span>
 
               </div>
@@ -537,7 +618,7 @@ function AIDetection() {
                 <div className="guidance-header">
 
                   <div className="guidance-icon">
-                    ✓
+                    âœ“
                   </div>
 
                   <div>
@@ -556,7 +637,7 @@ function AIDetection() {
                 <ul>
                   {result.guidance.map((item, index) => (
                     <li key={index}>
-                      <span>✓</span>
+                      <span>âœ“</span>
                       {item}
                     </li>
                   ))}
@@ -574,7 +655,7 @@ function AIDetection() {
                   className="secondary-ai-btn"
                   onClick={handleReset}
                 >
-                  ↻ New Scan
+                  â†» New Scan
                 </button>
 
                 <button
@@ -586,7 +667,7 @@ function AIDetection() {
                     )
                   }
                 >
-                  ✓ Save Result
+                  âœ“ Save Result
                 </button>
 
               </div>
@@ -604,7 +685,7 @@ function AIDetection() {
       <div className="ai-info-grid">
 
         <div className="ai-info-card">
-          <div className="info-icon">🛡</div>
+          <div className="info-icon">ðŸ›¡</div>
 
           <div>
             <strong>
@@ -620,7 +701,7 @@ function AIDetection() {
 
 
         <div className="ai-info-card">
-          <div className="info-icon">⚡</div>
+          <div className="info-icon">âš¡</div>
 
           <div>
             <strong>
@@ -636,7 +717,7 @@ function AIDetection() {
 
 
         <div className="ai-info-card">
-          <div className="info-icon">📊</div>
+          <div className="info-icon">ðŸ“Š</div>
 
           <div>
             <strong>
@@ -656,7 +737,7 @@ function AIDetection() {
       {/* Prototype Notice */}
 
       <div className="ai-prototype-notice">
-        <span>ⓘ</span>
+        <span>â“˜</span>
 
         <p>
           <strong>Prototype Mode:</strong> The current
@@ -667,6 +748,7 @@ function AIDetection() {
       </div>
 
     </section>
+    </>
   );
 }
 
