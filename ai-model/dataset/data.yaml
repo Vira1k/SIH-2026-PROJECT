@@ -1,0 +1,12 @@
+path: .
+
+train: images/train
+val: images/val
+test: images/test
+
+names:
+  0: glove
+  1: gauze
+  2: urine_bag
+  3: test_tube
+  4: medical_glasses
