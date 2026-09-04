@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import "./AIDetection.css";
 
+const AI_API_URL =
+  import.meta.env.VITE_AI_API_URL || "http://localhost:8000";
+
 const demoResults = [
   {
     name: "Used Syringe",
@@ -60,6 +63,102 @@ const demoResults = [
   }
 ];
 
+const AI_RESULT_CONFIG = {
+  glove: {
+    name: "Glove",
+    category: "Contaminated Plastic",
+    risk: "Medium",
+    color: "red",
+    guidance: [
+      "Handle contaminated gloves using appropriate protective equipment.",
+      "Place in the designated red biomedical waste bag.",
+      "Do not mix contaminated plastic waste with general waste.",
+    ],
+  },
+  gauze: {
+    name: "Blood-Soaked Gauze",
+    category: "Soiled Waste",
+    risk: "High",
+    color: "yellow",
+    guidance: [
+      "Handle using appropriate protective equipment.",
+      "Place in the designated yellow biomedical waste bag.",
+      "Avoid mixing soiled waste with general waste.",
+    ],
+  },
+  urine_bag: {
+    name: "Urine Bag",
+    category: "Contaminated Plastic",
+    risk: "Medium",
+    color: "red",
+    guidance: [
+      "Handle the contaminated bag using appropriate protective equipment.",
+      "Place in the designated red biomedical waste bag.",
+      "Follow hospital procedures for contaminated plastic waste.",
+    ],
+  },
+  test_tube: {
+    name: "Test Tube",
+    category: "Glass / Laboratory Waste",
+    risk: "Medium",
+    color: "blue",
+    guidance: [
+      "Handle laboratory glassware carefully.",
+      "Place in the designated blue biomedical waste container.",
+      "Do not place broken glass in regular waste.",
+    ],
+  },
+  medical_glasses: {
+    name: "Medical Glasses",
+    category: "Glass Waste",
+    risk: "Medium",
+    color: "blue",
+    guidance: [
+      "Handle the glass item carefully to avoid breakage.",
+      "Place in the designated blue biomedical waste container.",
+      "Keep glass waste separated from general waste.",
+    ],
+  },
+};
+
+function buildAIResult(detection) {
+  const itemKey = String(detection.item || "").toLowerCase();
+  const config = AI_RESULT_CONFIG[itemKey];
+
+  if (!config) {
+    return {
+      name: detection.item || "Unknown Item",
+      category: "Unsupported / Review Required",
+      bin: detection.bin || "Review Required",
+      risk: "Review",
+      confidence: `${Number(detection.confidencePercent || 0).toFixed(1)}%`,
+      icon: "⚠️",
+      color: "yellow",
+      guidance: [
+        "The current AI model does not have a verified disposal rule for this item.",
+        "Do not rely on an automatic bin recommendation.",
+        "Verify the item with hospital biomedical-waste guidelines before segregation.",
+      ],
+    };
+  }
+
+  return {
+    ...config,
+    bin: detection.bin || "Review Required",
+    confidence: `${Number(detection.confidencePercent || 0).toFixed(1)}%`,
+    icon:
+      itemKey === "glove"
+        ? "🧤"
+        : itemKey === "gauze"
+        ? "🩹"
+        : itemKey === "urine_bag"
+        ? "🧴"
+        : itemKey === "test_tube"
+        ? "🧪"
+        : "🥽",
+  };
+}
+
 function AIDetection() {
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -71,6 +170,7 @@ function AIDetection() {
   const [result, setResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState("");
+  const [noDetection, setNoDetection] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -89,6 +189,7 @@ function AIDetection() {
 
     setError("");
     setResult(null);
+    setNoDetection(false);
 
     if (!file.type.startsWith("image/")) {
       setError("Please select a valid image file.");
@@ -124,7 +225,7 @@ function AIDetection() {
     cameraInputRef.current?.click();
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     if (!selectedFile) {
       setError("Please upload a waste image first.");
       return;
@@ -132,47 +233,69 @@ function AIDetection() {
 
     setError("");
     setResult(null);
+    setNoDetection(false);
     setIsAnalyzing(true);
 
-    // Demo analysis delay.
-    // This will later be replaced by the real AI model/API.
-    setTimeout(() => {
-      const fileName = selectedFile.name.toLowerCase();
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
 
-      let detectedResult;
+      const response = await fetch(`${AI_API_URL}/predict`, {
+        method: "POST",
+        body: formData,
+      });
 
-      if (
-        fileName.includes("syringe") ||
-        fileName.includes("needle") ||
-        fileName.includes("sharp")
-      ) {
-        detectedResult = demoResults[0];
-      } else if (
-        fileName.includes("dressing") ||
-        fileName.includes("bandage") ||
-        fileName.includes("blood")
-      ) {
-        detectedResult = demoResults[1];
-      } else if (
-        fileName.includes("iv") ||
-        fileName.includes("tube") ||
-        fileName.includes("plastic")
-      ) {
-        detectedResult = demoResults[2];
-      } else if (
-        fileName.includes("vial") ||
-        fileName.includes("medicine") ||
-        fileName.includes("glass")
-      ) {
-        detectedResult = demoResults[3];
-      } else {
-        detectedResult =
-          demoResults[Math.floor(Math.random() * demoResults.length)];
+      let data = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error("AI service returned an invalid response.");
       }
 
-      setResult(detectedResult);
+      if (!response.ok || !data?.success) {
+        throw new Error(
+          data?.detail || "AI service could not analyze this image."
+        );
+      }
+
+      const detections = Array.isArray(data.detections)
+        ? data.detections
+        : [];
+
+      if (detections.length === 0) {
+        setNoDetection(true);
+        return;
+      }
+
+      // The current prototype uses the highest-confidence detection.
+      const bestDetection = [...detections].sort(
+        (a, b) => Number(b.confidence || 0) - Number(a.confidence || 0)
+      )[0];
+
+      const confidence = Number(bestDetection.confidence || 0);
+
+      // Reject weak predictions instead of forcing a waste class.
+      if (confidence < 0.5) {
+        setNoDetection(true);
+        setError(
+          "The AI could not confidently identify biomedical waste in this image. Please retake the photo with the waste item clearly visible."
+        );
+        return;
+      }
+
+      setResult(buildAIResult(bestDetection));
+    } catch (requestError) {
+      console.error("AI detection error:", requestError);
+
+      setError(
+        requestError?.message?.includes("Failed to fetch")
+          ? "AI service is not running. Start the BioTrack-AI detection service on port 8000 and try again."
+          : requestError?.message || "Unable to analyze the image."
+      );
+    } finally {
       setIsAnalyzing(false);
-    }, 1800);
+    }
   };
 
   const handleReset = () => {
@@ -184,6 +307,7 @@ function AIDetection() {
     setPreviewUrl("");
     setResult(null);
     setError("");
+    setNoDetection(false);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -469,7 +593,7 @@ function AIDetection() {
           </div>
 
 
-          {!result && !isAnalyzing && (
+          {!result && !isAnalyzing && !noDetection && (
             <div className="empty-result">
 
               <div className="ai-scan-animation">
@@ -511,7 +635,7 @@ function AIDetection() {
               </h4>
 
               <p>
-                BioTrack AI is processing the uploaded
+                Your trained BioTrack AI model is analyzing the uploaded
                 waste image.
               </p>
 
@@ -534,6 +658,35 @@ function AIDetection() {
             </div>
           )}
 
+
+          {noDetection && !isAnalyzing && (
+            <div className="empty-result ai-rejected-result">
+              <div className="ai-rejection-icon">⚠️</div>
+
+              <h4>No Biomedical Waste Detected</h4>
+
+              <p>
+                BioTrack AI could not confidently identify a supported
+                biomedical waste item in this image.
+              </p>
+
+              <div className="ai-rejection-message">
+                <strong>Please do not segregate based on this result.</strong>
+                <span>
+                  Retake the photo with the waste item clearly visible and
+                  well-lit, or choose another image.
+                </span>
+              </div>
+
+              <button
+                type="button"
+                className="secondary-ai-btn"
+                onClick={handleReset}
+              >
+                ↻ Try Another Image
+              </button>
+            </div>
+          )}
 
           {result && !isAnalyzing && (
             <div className="result-content">
@@ -663,7 +816,7 @@ function AIDetection() {
                   className="save-result-btn"
                   onClick={() =>
                     alert(
-                      "Scan result will be saved to the database when backend integration is connected."
+                      "AI detection is connected. Database saving will be enabled in the next integration step."
                     )
                   }
                 >
@@ -740,10 +893,10 @@ function AIDetection() {
         <span>ⓘ</span>
 
         <p>
-          <strong>Prototype Mode:</strong> The current
-          classification is a frontend demonstration.
-          A trained computer-vision model will be connected
-          in the AI integration phase.
+          <strong>AI Connected:</strong> This scan is processed by
+          the custom BioTrack-AI computer-vision model trained for the
+          current prototype. Always verify the recommendation before
+          final segregation.
         </p>
       </div>
 
@@ -753,3 +906,54 @@ function AIDetection() {
 }
 
 export default AIDetection;
+
+
+/* =========================================================
+   BioTrack-AI — STEP 2: Real AI Result / Rejection UI
+========================================================= */
+
+.ai-rejected-result .ai-rejection-icon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.12);
+  font-size: 30px;
+}
+
+.ai-rejected-result h4 {
+  margin-bottom: 10px;
+}
+
+.ai-rejected-result > p {
+  max-width: 430px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ai-rejection-message {
+  max-width: 460px;
+  margin: 18px auto;
+  padding: 14px 16px;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 14px;
+  background: rgba(245, 158, 11, 0.07);
+  text-align: left;
+}
+
+.ai-rejection-message strong,
+.ai-rejection-message span {
+  display: block;
+}
+
+.ai-rejection-message strong {
+  margin-bottom: 5px;
+}
+
+.ai-rejection-message span {
+  font-size: 12px;
+  line-height: 1.5;
+}
