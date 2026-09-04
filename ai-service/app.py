@@ -1,6 +1,6 @@
 from pathlib import Path
-
 from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from ultralytics import YOLO
 
@@ -55,6 +55,13 @@ app = FastAPI(
     title="BioTrack-AI Detection Service",
     description="Biomedical waste object detection using a custom trained YOLO model.",
     version="1.0.0",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

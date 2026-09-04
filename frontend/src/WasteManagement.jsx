@@ -130,16 +130,23 @@ function WasteManagement() {
 
   const totals = useMemo(() => {
     return {
-      total: records.reduce((sum, item) => sum + Number(item.weight || 0), 0),
+      total: records.reduce(
+        (sum, item) => sum + Number(item.weight || 0),
+        0
+      ),
+
       yellow: records
         .filter((item) => item.bin === "Yellow")
         .reduce((sum, item) => sum + Number(item.weight || 0), 0),
+
       red: records
         .filter((item) => item.bin === "Red")
         .reduce((sum, item) => sum + Number(item.weight || 0), 0),
+
       white: records
         .filter((item) => item.bin === "White")
         .reduce((sum, item) => sum + Number(item.weight || 0), 0),
+
       blue: records
         .filter((item) => item.bin === "Blue")
         .reduce((sum, item) => sum + Number(item.weight || 0), 0),
@@ -173,7 +180,11 @@ function WasteManagement() {
   const handleAddWaste = async (event) => {
     event.preventDefault();
 
-    if (!formData.type.trim() || !formData.weight || !formData.department.trim()) {
+    if (
+      !formData.type.trim() ||
+      !formData.weight ||
+      !formData.department.trim()
+    ) {
       alert("Please fill all required fields.");
       return;
     }
@@ -224,10 +235,13 @@ function WasteManagement() {
       });
 
       setShowModal(false);
+
       await loadWasteRecords();
+
       alert("Waste record saved successfully.");
     } catch (err) {
       console.error("Add waste error:", err);
+
       alert(
         err.message ||
           "Unable to connect to the BioTrack-AI server. Please try again."
@@ -386,8 +400,11 @@ function WasteManagement() {
         <div className="waste-toolbar">
           <div>
             <h3>Waste Records</h3>
+
             <p>
-              {isLoading ? "Loading records..." : `${filteredRecords.length} records found`}
+              {isLoading
+                ? "Loading records..."
+                : `${filteredRecords.length} records found`}
             </p>
           </div>
 
@@ -449,6 +466,7 @@ function WasteManagement() {
                     <div>
                       <span>♻</span>
                       <strong>No waste records found</strong>
+
                       <p>
                         {records.length === 0
                           ? "Add your first waste record."
@@ -459,11 +477,10 @@ function WasteManagement() {
                 </tr>
               ) : (
                 filteredRecords.map((record) => {
-                  const bin =
-                    binInfo[record.bin] || {
-                      icon: "•",
-                      className: "",
-                    };
+                  const bin = binInfo[record.bin] || {
+                    icon: "•",
+                    className: "",
+                  };
 
                   return (
                     <tr key={record._id || record.id}>
@@ -482,7 +499,9 @@ function WasteManagement() {
                       </td>
 
                       <td>
-                        <span className={`bin-badge ${bin.className}`}>
+                        <span
+                          className={`bin-badge ${bin.className}`}
+                        >
                           {bin.icon} {record.bin}
                         </span>
                       </td>
@@ -538,6 +557,7 @@ function WasteManagement() {
 
           <div>
             <strong>AI Assisted Classification</strong>
+
             <p>
               Use AI Detect to identify waste category and recommended disposal
               bin before recording.
@@ -550,6 +570,7 @@ function WasteManagement() {
 
           <div>
             <strong>Traceable Records</strong>
+
             <p>
               Every waste entry receives a unique ID for future collection and
               tracking.
