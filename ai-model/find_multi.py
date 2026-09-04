@@ -2,51 +2,31 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
-print("========================================")
-print(" BioTrack-AI — Finding Multi-Object Images")
-print("========================================")
+LABEL_DIR = BASE_DIR / "dataset" / "labels" / "test"
+IMAGE_DIR = BASE_DIR / "dataset" / "images" / "test"
 
-total_found = 0
+found = []
 
-for split in ["train", "val", "test"]:
+for label_file in LABEL_DIR.glob("*.txt"):
+    lines = [
+        line.strip()
+        for line in label_file.read_text().splitlines()
+        if line.strip()
+    ]
 
-    LABEL_DIR = BASE_DIR / "dataset" / "labels" / split
-    IMAGE_DIR = BASE_DIR / "dataset" / "images" / split
+    if len(lines) >= 2:
+        for extension in [".jpg", ".jpeg", ".png"]:
+            image_file = IMAGE_DIR / (label_file.stem + extension)
 
-    found = []
-
-    for label_file in LABEL_DIR.glob("*.txt"):
-
-        lines = [
-            line.strip()
-            for line in label_file.read_text().splitlines()
-            if line.strip()
-        ]
-
-        if len(lines) >= 2:
-
-            image_file = None
-
-            for extension in [".jpg", ".jpeg", ".png"]:
-
-                candidate = IMAGE_DIR / (label_file.stem + extension)
-
-                if candidate.exists():
-                    image_file = candidate
-                    break
-
-            if image_file:
+            if image_file.exists():
                 found.append((image_file, len(lines)))
+                break
 
-    print()
-    print(f"{split.upper()}: {len(found)} multi-object images")
-
-    for image_file, object_count in found[:5]:
-        print(f"  {image_file.name} -> {object_count} objects")
-
-    total_found += len(found)
-
-print()
 print("========================================")
-print(f"TOTAL MULTI-OBJECT IMAGES: {total_found}")
+print("BioTrack-AI — Multi-Object Images")
 print("========================================")
+
+print(f"\nFound {len(found)} multi-object images.\n")
+
+for image_file, count in found[:10]:
+    print(f"{image_file.name} -> {count} objects")
