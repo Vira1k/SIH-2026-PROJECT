@@ -1,0 +1,10 @@
+train: C:/Users/vks37/OneDrive/Desktop/BioTrack-AImodel/ai-model/dataset/images/train
+val: C:/Users/vks37/OneDrive/Desktop/BioTrack-AImodel/ai-model/dataset/images/val
+test: C:/Users/vks37/OneDrive/Desktop/BioTrack-AImodel/ai-model/dataset/images/test
+
+names:
+  0: glove
+  1: gauze
+  2: urine_bag
+  3: test_tube
+  4: medical_glasses
