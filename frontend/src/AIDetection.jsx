@@ -8,7 +8,7 @@ const demoResults = [
     bin: "White",
     risk: "High",
     confidence: "96.4%",
-    icon: "ðŸ’‰",
+    icon: "💉",
     color: "white",
     guidance: [
       "Do not recap or bend the syringe.",
@@ -22,7 +22,7 @@ const demoResults = [
     bin: "Yellow",
     risk: "High",
     confidence: "94.8%",
-    icon: "ðŸ©¹",
+    icon: "🩹",
     color: "yellow",
     guidance: [
       "Handle using appropriate protective equipment.",
@@ -36,7 +36,7 @@ const demoResults = [
     bin: "Red",
     risk: "Medium",
     confidence: "92.7%",
-    icon: "ðŸ§ª",
+    icon: "🧪",
     color: "red",
     guidance: [
       "Separate contaminated plastic from other waste.",
@@ -50,7 +50,7 @@ const demoResults = [
     bin: "Blue",
     risk: "Medium",
     confidence: "91.9%",
-    icon: "ðŸ’Š",
+    icon: "💊",
     color: "blue",
     guidance: [
       "Keep glass containers separated from general waste.",
@@ -256,7 +256,7 @@ function AIDetection() {
 
         <div>
           <div className="ai-title-row">
-            <div className="ai-title-icon">âœ¦</div>
+            <div className="ai-title-icon">✦</div>
 
             <div>
               <span className="ai-eyebrow">
@@ -321,7 +321,7 @@ function AIDetection() {
             {!previewUrl ? (
               <>
                 <div className="upload-big-icon">
-                  â†‘
+                  ↑
                 </div>
 
                 <h4>
@@ -342,7 +342,7 @@ function AIDetection() {
                 </button>
 
                 <span className="upload-limit">
-                  JPG, JPEG or PNG â€¢ Maximum 10MB
+                  JPG, JPEG or PNG • Maximum 10MB
                 </span>
               </>
             ) : (
@@ -411,7 +411,7 @@ function AIDetection() {
                 className="remove-file"
                 onClick={handleReset}
               >
-                Ã—
+                ×
               </button>
 
             </div>
@@ -420,7 +420,7 @@ function AIDetection() {
 
           {error && (
             <div className="ai-error">
-              âš  {error}
+              ⚠ {error}
             </div>
           )}
 
@@ -438,7 +438,7 @@ function AIDetection() {
               </>
             ) : (
               <>
-                âœ¦ Analyze Waste
+                ✦ Analyze Waste
               </>
             )}
           </button>
@@ -473,7 +473,7 @@ function AIDetection() {
             <div className="empty-result">
 
               <div className="ai-scan-animation">
-                <span>âœ¦</span>
+                <span>✦</span>
               </div>
 
               <h4>
@@ -488,10 +488,10 @@ function AIDetection() {
 
               <div className="result-features">
 
-                <span>âœ“ Waste Category</span>
-                <span>âœ“ Recommended Bin</span>
-                <span>âœ“ Risk Assessment</span>
-                <span>âœ“ AI Confidence</span>
+                <span>✓ Waste Category</span>
+                <span>✓ Recommended Bin</span>
+                <span>✓ Risk Assessment</span>
+                <span>✓ AI Confidence</span>
 
               </div>
 
@@ -518,15 +518,15 @@ function AIDetection() {
               <div className="analysis-steps">
 
                 <span className="completed">
-                  âœ“ Image received
+                  ✓ Image received
                 </span>
 
                 <span className="active-step">
-                  â—Œ Identifying waste
+                  ◉ Identifying waste
                 </span>
 
                 <span>
-                  â—‹ Generating recommendation
+                  ○ Generating recommendation
                 </span>
 
               </div>
@@ -618,7 +618,7 @@ function AIDetection() {
                 <div className="guidance-header">
 
                   <div className="guidance-icon">
-                    âœ“
+                    ✓
                   </div>
 
                   <div>
@@ -637,7 +637,7 @@ function AIDetection() {
                 <ul>
                   {result.guidance.map((item, index) => (
                     <li key={index}>
-                      <span>âœ“</span>
+                      <span>✓</span>
                       {item}
                     </li>
                   ))}
@@ -655,7 +655,7 @@ function AIDetection() {
                   className="secondary-ai-btn"
                   onClick={handleReset}
                 >
-                  â†» New Scan
+                  ↻ New Scan
                 </button>
 
                 <button
@@ -667,7 +667,7 @@ function AIDetection() {
                     )
                   }
                 >
-                  âœ“ Save Result
+                  ✓ Save Result
                 </button>
 
               </div>
@@ -685,7 +685,7 @@ function AIDetection() {
       <div className="ai-info-grid">
 
         <div className="ai-info-card">
-          <div className="info-icon">ðŸ›¡</div>
+          <div className="info-icon">🛡️</div>
 
           <div>
             <strong>
@@ -701,7 +701,7 @@ function AIDetection() {
 
 
         <div className="ai-info-card">
-          <div className="info-icon">âš¡</div>
+          <div className="info-icon">⚡</div>
 
           <div>
             <strong>
@@ -717,7 +717,7 @@ function AIDetection() {
 
 
         <div className="ai-info-card">
-          <div className="info-icon">ðŸ“Š</div>
+          <div className="info-icon">📊</div>
 
           <div>
             <strong>
@@ -737,7 +737,7 @@ function AIDetection() {
       {/* Prototype Notice */}
 
       <div className="ai-prototype-notice">
-        <span>â“˜</span>
+        <span>ⓘ</span>
 
         <p>
           <strong>Prototype Mode:</strong> The current
