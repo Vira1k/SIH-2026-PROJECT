@@ -3,7 +3,7 @@ from ultralytics import YOLO
 
 
 # --------------------------------------------------
-# BioTrack-AI — YOLO training from scratch
+# BioTrack-AI — Full YOLO training from scratch
 # --------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -12,26 +12,30 @@ RUNS_DIR = BASE_DIR / "runs"
 
 
 print("========================================")
-print("       BioTrack-AI AI Training")
+print("       BioTrack-AI FULL AI TRAINING")
 print("========================================")
 print(f"Dataset: {DATA_YAML}")
 print("Training mode: FROM SCRATCH")
 print("Pretrained weights: NO")
+print("Epochs: 100")
+print("Image size: 640")
+print("Device: CPU")
 print("========================================")
 
 
-# Create YOLO model architecture only.
-# No pretrained .pt weights are loaded.
+# Create YOLO architecture only.
+# No pretrained weights are loaded.
 model = YOLO("yolo11n.yaml")
 
 
-# First short training run.
-# We are testing the complete pipeline before
-# doing a longer training session.
+# --------------------------------------------------
+# FULL TRAINING
+# --------------------------------------------------
+
 results = model.train(
     data=str(DATA_YAML),
 
-    epochs=15,
+    epochs=100,
     imgsz=640,
 
     batch=4,
@@ -40,11 +44,11 @@ results = model.train(
     device="cpu",
 
     project=str(RUNS_DIR),
-    name="biotrack_test",
+    name="biotrack_retrain",
 
     pretrained=False,
 
-    patience=3,
+    patience=15,
 
     verbose=True,
 )
@@ -52,8 +56,8 @@ results = model.train(
 
 print()
 print("========================================")
-print("       TEST TRAINING COMPLETED")
+print("       FULL TRAINING COMPLETED")
 print("========================================")
-print("Model results saved inside:")
-print(RUNS_DIR / "biotrack_test")
+print("New model saved inside:")
+print(RUNS_DIR / "biotrack_retrain")
 print("========================================")

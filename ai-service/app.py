@@ -11,16 +11,14 @@ from ultralytics import YOLO
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
-
 MODEL_PATH = (
     PROJECT_DIR
     / "ai-model"
     / "runs"
-    / "biotrack_test-4"
+    / "biotrack_retrain"
     / "weights"
     / "best.pt"
 )
-
 if not MODEL_PATH.exists():
     raise FileNotFoundError(
         f"Trained model not found at: {MODEL_PATH}"
