@@ -11,6 +11,7 @@ from ultralytics import YOLO
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
+
 MODEL_PATH = (
     PROJECT_DIR
     / "ai-model"
