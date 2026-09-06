@@ -1,12 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import "./AIDetection.css";
 
-const AI_API_URL =
-  import.meta.env.VITE_AI_API_URL || "http://localhost:8000";
+// Production AI service. Vercel can override this with VITE_AI_API_URL,
+// but the Render URL is the safe production fallback.
+const AI_API_URL = (
+  import.meta.env.VITE_AI_API_URL ||
+  "https://biotrack-ai-service.onrender.com"
+).replace(/\\/+$/, "");
 
-const API_URL =
+const API_URL = (
   import.meta.env.VITE_API_URL ||
-  "https://sih-2026-project-u1ga.onrender.com/api";
+  "https://sih-2026-project-u1ga.onrender.com/api"
+).replace(/\\/+$/, "");
 
 const demoResults = [
   {
@@ -135,7 +140,7 @@ function buildAIResult(detection) {
 
   if (!config) {
     return {
-      name: detection.item || "Unknown Item",
+      name: "Not Categorised",
       category: "Unsupported / Review Required",
       bin: detection.bin || "Review Required",
       risk: "Review",
@@ -259,10 +264,22 @@ function AIDetection() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch(`${AI_API_URL}/predict`, {
-        method: "POST",
-        body: formData,
-      });
+      // Render Free services can take a little time to wake up.
+      // Give the AI service up to 120 seconds to respond.
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 120000);
+
+      let response;
+
+      try {
+        response = await fetch(`${AI_API_URL}/predict`, {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       let data = null;
 
@@ -282,18 +299,41 @@ function AIDetection() {
         ? data.detections
         : [];
 
+      // No detection from the AI model.
       if (detections.length === 0) {
         setNoDetection(true);
         return;
       }
 
+      // Use the highest-confidence detection.
       const bestDetection = [...detections].sort(
         (a, b) =>
           Number(b.confidence || 0) - Number(a.confidence || 0)
       )[0];
 
+      const itemKey = String(bestDetection.item || "").toLowerCase().trim();
       const confidence = Number(bestDetection.confidence || 0);
 
+      // The frontend only has verified disposal rules for the five
+      // classes trained for the current BioTrack-AI model.
+      const supportedClasses = [
+        "glove",
+        "gauze",
+        "urine_bag",
+        "test_tube",
+        "medical_glasses",
+      ];
+
+      // Reject unsupported/non-biomedical predictions.
+      if (!supportedClasses.includes(itemKey)) {
+        setNoDetection(true);
+        setError(
+          "Not Categorised: the AI could not verify this image as one of the supported biomedical-waste items. Please upload a clear image of biomedical waste."
+        );
+        return;
+      }
+
+      // Reject low-confidence predictions.
       if (confidence < 0.5) {
         setNoDetection(true);
         setError(
@@ -306,11 +346,21 @@ function AIDetection() {
     } catch (requestError) {
       console.error("AI detection error:", requestError);
 
-      setError(
+      if (requestError?.name === "AbortError") {
+        setError(
+          "AI analysis is taking too long. The AI service may be waking up. Please wait a few seconds and try again."
+        );
+      } else if (
         requestError?.message?.includes("Failed to fetch")
-          ? "AI service is not running. Start the BioTrack-AI detection service on port 8000 and try again."
-          : requestError?.message || "Unable to analyze the image."
-      );
+      ) {
+        setError(
+          "Unable to connect to the BioTrack-AI service. Please check the internet connection and try again."
+        );
+      } else {
+        setError(
+          requestError?.message || "Unable to analyze the image."
+        );
+      }
     } finally {
       setIsAnalyzing(false);
     }
