@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import "./AIDetection.css";
 
-// Production AI service. Vercel can override this with VITE_AI_API_URL,
-// but the Render URL is the safe production fallback.
 const AI_API_URL = (
   import.meta.env.VITE_AI_API_URL ||
   "https://biotrack-ai-service.onrender.com"
-).replace(/\\/+$/, "");
+).replace(/\/+$/, "");
 
 const API_URL = (
   import.meta.env.VITE_API_URL ||
   "https://sih-2026-project-u1ga.onrender.com/api"
-).replace(/\\/+$/, "");
+).replace(/\/+$/, "");
 
 const demoResults = [
   {
