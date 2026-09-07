@@ -262,21 +262,15 @@ function AIDetection() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      // Render Free instances can briefly return a gateway/network error
-      // while waking up. Warm the service first, then retry the prediction
-      // a few times before showing an error to the user.
+      // IMPORTANT: Do not call /health from the browser.
+      // Some clients block health-check URLs with ERR_BLOCKED_BY_CLIENT.
+      // Call /predict directly and retry it if Render is waking up.
       let response = null;
       let data = null;
       let lastError = null;
 
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         try {
-          // Wake/check the AI service before sending the image.
-          await fetch(`${AI_API_URL}/health`, {
-            method: "GET",
-            cache: "no-store",
-          });
-
           response = await fetch(`${AI_API_URL}/predict`, {
             method: "POST",
             body: formData,
@@ -284,7 +278,6 @@ function AIDetection() {
           });
 
           let attemptData = null;
-
           try {
             attemptData = await response.json();
           } catch {
@@ -297,8 +290,7 @@ function AIDetection() {
           }
 
           lastError = new Error(
-            attemptData?.detail ||
-              `AI service returned HTTP ${response.status}.`
+            attemptData?.detail || `AI service returned HTTP ${response.status}.`
           );
         } catch (attemptError) {
           lastError = attemptError;
@@ -310,8 +302,7 @@ function AIDetection() {
       }
 
       if (!data?.success) {
-        throw lastError ||
-          new Error("AI service could not analyze this image.");
+        throw lastError || new Error("AI service could not analyze this image.");
       }
 
       const detections = Array.isArray(data.detections)
@@ -799,7 +790,7 @@ function AIDetection() {
               <div className="empty-result ai-rejected-result">
                 <div className="ai-rejection-icon">⚠️</div>
 
-                <h4>No Biomedical Waste Detected</h4>
+                <h4>Not Categorised</h4>
 
                 <p>
                   BioTrack AI could not confidently identify a
