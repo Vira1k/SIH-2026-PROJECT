@@ -262,26 +262,56 @@ function AIDetection() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      // Send the image directly to the deployed BioTrack-AI service.
-      // No client-side timeout is used because Render Free can take longer
-      // while waking the service or loading the model.
-      const response = await fetch(`${AI_API_URL}/predict`, {
-        method: "POST",
-        body: formData,
-      });
-
+      // Render Free instances can briefly return a gateway/network error
+      // while waking up. Warm the service first, then retry the prediction
+      // a few times before showing an error to the user.
+      let response = null;
       let data = null;
+      let lastError = null;
 
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error("AI service returned an invalid response.");
+      for (let attempt = 1; attempt <= 3; attempt += 1) {
+        try {
+          // Wake/check the AI service before sending the image.
+          await fetch(`${AI_API_URL}/health`, {
+            method: "GET",
+            cache: "no-store",
+          });
+
+          response = await fetch(`${AI_API_URL}/predict`, {
+            method: "POST",
+            body: formData,
+            cache: "no-store",
+          });
+
+          let attemptData = null;
+
+          try {
+            attemptData = await response.json();
+          } catch {
+            attemptData = null;
+          }
+
+          if (response.ok && attemptData?.success) {
+            data = attemptData;
+            break;
+          }
+
+          lastError = new Error(
+            attemptData?.detail ||
+              `AI service returned HTTP ${response.status}.`
+          );
+        } catch (attemptError) {
+          lastError = attemptError;
+        }
+
+        if (attempt < 3) {
+          await new Promise((resolve) => setTimeout(resolve, 4000));
+        }
       }
 
-      if (!response.ok || !data?.success) {
-        throw new Error(
-          data?.detail || "AI service could not analyze this image."
-        );
+      if (!data?.success) {
+        throw lastError ||
+          new Error("AI service could not analyze this image.");
       }
 
       const detections = Array.isArray(data.detections)
@@ -769,11 +799,11 @@ function AIDetection() {
               <div className="empty-result ai-rejected-result">
                 <div className="ai-rejection-icon">⚠️</div>
 
-                <h4>Not Categorised</h4>
+                <h4>No Biomedical Waste Detected</h4>
 
                 <p>
-                  BioTrack AI could not confidently identify this image as one
-                  of the supported biomedical waste items.
+                  BioTrack AI could not confidently identify a
+                  supported biomedical waste item in this image.
                 </p>
 
                 <div className="ai-rejection-message">
