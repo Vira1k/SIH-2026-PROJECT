@@ -323,7 +323,7 @@ function AIDetection() {
       }
 
       // Reject low-confidence predictions.
-      if (confidence < 0.5) {
+      if (confidence < 0.65) {
         setNoDetection(true);
         setError(
           "The AI could not confidently identify biomedical waste in this image. Please retake the photo with the waste item clearly visible."
@@ -769,11 +769,11 @@ function AIDetection() {
               <div className="empty-result ai-rejected-result">
                 <div className="ai-rejection-icon">⚠️</div>
 
-                <h4>No Biomedical Waste Detected</h4>
+                <h4>Not Categorised</h4>
 
                 <p>
-                  BioTrack AI could not confidently identify a
-                  supported biomedical waste item in this image.
+                  BioTrack AI could not confidently identify this image as one
+                  of the supported biomedical waste items.
                 </p>
 
                 <div className="ai-rejection-message">
