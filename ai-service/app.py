@@ -1,4 +1,6 @@
 from pathlib import Path
+from io import BytesIO
+
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
@@ -12,6 +14,11 @@ from ultralytics import YOLO
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
 
+
+# =========================================================
+# MODEL PATH
+# =========================================================
+
 MODEL_PATH = (
     PROJECT_DIR
     / "ai-model"
@@ -20,17 +27,32 @@ MODEL_PATH = (
     / "weights"
     / "best.pt"
 )
+
 if not MODEL_PATH.exists():
     raise FileNotFoundError(
         f"Trained model not found at: {MODEL_PATH}"
     )
 
 
-# Load YOUR trained model
+# =========================================================
+# LOAD TRAINED MODEL
+# =========================================================
+
+print("========================================")
+print("       BioTrack-AI AI SERVICE")
+print("========================================")
+print(f"Loading model from: {MODEL_PATH}")
+
 model = YOLO(str(MODEL_PATH))
 
+print("Model loaded successfully.")
+print("========================================")
 
-# Classes used while training
+
+# =========================================================
+# TRAINING CLASSES
+# =========================================================
+
 CLASS_NAMES = {
     0: "glove",
     1: "gauze",
@@ -40,7 +62,10 @@ CLASS_NAMES = {
 }
 
 
-# Initial segregation-bin mapping
+# =========================================================
+# BIOMEDICAL WASTE BIN MAPPING
+# =========================================================
+
 BIN_MAPPING = {
     "glove": "Red",
     "gauze": "Yellow",
@@ -50,19 +75,45 @@ BIN_MAPPING = {
 }
 
 
+# =========================================================
+# FASTAPI APP
+# =========================================================
+
 app = FastAPI(
     title="BioTrack-AI Detection Service",
-    description="Biomedical waste object detection using a custom trained YOLO model.",
+    description=(
+        "Biomedical waste object detection using "
+        "a custom trained YOLO model."
+    ),
     version="1.0.0",
 )
+
+
+# =========================================================
+# CORS CONFIGURATION
+# =========================================================
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        # Vercel production frontend
+        "https://biotrack-ai-frontend.vercel.app",
+
+        # Local Vite development
+        "http://localhost:5173",
+
+        # Netlify deployment
+        "https://sih-2026-project.netlify.app",
+    ],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
+# =========================================================
+# ROOT / STATUS
+# =========================================================
 
 @app.get("/")
 def root():
@@ -74,6 +125,10 @@ def root():
     }
 
 
+# =========================================================
+# HEALTH CHECK
+# =========================================================
+
 @app.get("/health")
 def health():
     return {
@@ -84,11 +139,19 @@ def health():
     }
 
 
+# =========================================================
+# AI PREDICTION
+# =========================================================
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     """
-    Receive one image and detect multiple biomedical waste objects.
+    Receive one image and detect biomedical waste objects.
     """
+
+    # -----------------------------------------------------
+    # Validate file type
+    # -----------------------------------------------------
 
     if not file.content_type:
         raise HTTPException(
@@ -103,6 +166,10 @@ async def predict(file: UploadFile = File(...)):
         )
 
     try:
+        # -------------------------------------------------
+        # Read uploaded image
+        # -------------------------------------------------
+
         image_bytes = await file.read()
 
         if not image_bytes:
@@ -111,11 +178,18 @@ async def predict(file: UploadFile = File(...)):
                 detail="Uploaded image is empty.",
             )
 
+        # -------------------------------------------------
+        # Open image
+        # -------------------------------------------------
+
         image = Image.open(
-            __import__("io").BytesIO(image_bytes)
+            BytesIO(image_bytes)
         ).convert("RGB")
 
-        # Run detection
+        # -------------------------------------------------
+        # Run YOLO detection
+        # -------------------------------------------------
+
         results = model.predict(
             source=image,
             conf=0.25,
@@ -123,6 +197,10 @@ async def predict(file: UploadFile = File(...)):
             device="cpu",
             verbose=False,
         )
+
+        # -------------------------------------------------
+        # Prepare detections
+        # -------------------------------------------------
 
         detections = []
 
@@ -133,39 +211,69 @@ async def predict(file: UploadFile = File(...)):
 
             for box in result.boxes:
 
-                class_id = int(box.cls[0].item())
-                confidence = float(box.conf[0].item())
+                # Class ID
+                class_id = int(
+                    box.cls[0].item()
+                )
 
+                # Confidence
+                confidence = float(
+                    box.conf[0].item()
+                )
+
+                # Bounding box
                 xyxy = box.xyxy[0].tolist()
 
+                # Class name
                 class_name = CLASS_NAMES.get(
                     class_id,
                     f"class_{class_id}",
                 )
 
+                # Bin mapping
                 bin_name = BIN_MAPPING.get(
                     class_name,
                     "Review Required",
                 )
 
+                # Add detection
                 detections.append(
                     {
                         "item": class_name,
                         "classId": class_id,
-                        "confidence": round(confidence, 4),
+                        "confidence": round(
+                            confidence,
+                            4,
+                        ),
                         "confidencePercent": round(
                             confidence * 100,
                             2,
                         ),
                         "bin": bin_name,
                         "boundingBox": {
-                            "x1": round(xyxy[0], 2),
-                            "y1": round(xyxy[1], 2),
-                            "x2": round(xyxy[2], 2),
-                            "y2": round(xyxy[3], 2),
+                            "x1": round(
+                                xyxy[0],
+                                2,
+                            ),
+                            "y1": round(
+                                xyxy[1],
+                                2,
+                            ),
+                            "x2": round(
+                                xyxy[2],
+                                2,
+                            ),
+                            "y2": round(
+                                xyxy[3],
+                                2,
+                            ),
                         },
                     }
                 )
+
+        # -------------------------------------------------
+        # Return prediction response
+        # -------------------------------------------------
 
         return {
             "success": True,
@@ -180,7 +288,10 @@ async def predict(file: UploadFile = File(...)):
         raise
 
     except Exception as error:
-        print("Prediction error:", error)
+        print(
+            "Prediction error:",
+            repr(error),
+        )
 
         raise HTTPException(
             status_code=500,
