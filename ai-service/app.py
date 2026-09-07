@@ -7,17 +7,12 @@ from PIL import Image
 from ultralytics import YOLO
 
 
-# =========================================================
-# BioTrack-AI — AI Detection Service
-# =========================================================
+# ============================================================
+# BioTrack-AI AI SERVICE
+# ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent
 PROJECT_DIR = BASE_DIR.parent
-
-
-# =========================================================
-# MODEL PATH
-# =========================================================
 
 MODEL_PATH = (
     PROJECT_DIR
@@ -28,15 +23,15 @@ MODEL_PATH = (
     / "best.pt"
 )
 
+
+# ============================================================
+# LOAD MODEL
+# ============================================================
+
 if not MODEL_PATH.exists():
     raise FileNotFoundError(
         f"Trained model not found at: {MODEL_PATH}"
     )
-
-
-# =========================================================
-# LOAD TRAINED MODEL
-# =========================================================
 
 print("========================================")
 print("       BioTrack-AI AI SERVICE")
@@ -49,9 +44,9 @@ print("Model loaded successfully.")
 print("========================================")
 
 
-# =========================================================
-# TRAINING CLASSES
-# =========================================================
+# ============================================================
+# MODEL CLASSES
+# ============================================================
 
 CLASS_NAMES = {
     0: "glove",
@@ -62,9 +57,9 @@ CLASS_NAMES = {
 }
 
 
-# =========================================================
+# ============================================================
 # BIOMEDICAL WASTE BIN MAPPING
-# =========================================================
+# ============================================================
 
 BIN_MAPPING = {
     "glove": "Red",
@@ -75,35 +70,27 @@ BIN_MAPPING = {
 }
 
 
-# =========================================================
+# ============================================================
 # FASTAPI APP
-# =========================================================
+# ============================================================
 
 app = FastAPI(
-    title="BioTrack-AI Detection Service",
-    description=(
-        "Biomedical waste object detection using "
-        "a custom trained YOLO model."
-    ),
+    title="BioTrack-AI AI Service",
+    description="AI-powered biomedical waste detection service",
     version="1.0.0",
 )
 
 
-# =========================================================
-# CORS CONFIGURATION
-# =========================================================
+# ============================================================
+# CORS
+# ============================================================
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        # Vercel production frontend
         "https://biotrack-ai-frontend.vercel.app",
-
-        # Local Vite development
-        "http://localhost:5173",
-
-        # Netlify deployment
         "https://sih-2026-project.netlify.app",
+        "http://localhost:5173",
     ],
     allow_credentials=False,
     allow_methods=["*"],
@@ -111,64 +98,60 @@ app.add_middleware(
 )
 
 
-# =========================================================
-# ROOT / STATUS
-# =========================================================
+# ============================================================
+# ROOT
+# ============================================================
 
 @app.get("/")
 def root():
     return {
         "success": True,
-        "service": "BioTrack-AI Detection Service",
-        "model": "Custom YOLO11 trained from scratch",
-        "status": "online",
+        "message": "BioTrack-AI AI Service is running successfully",
     }
 
 
-# =========================================================
+# ============================================================
 # HEALTH CHECK
-# =========================================================
+# ============================================================
 
 @app.get("/health")
 def health():
     return {
         "success": True,
         "status": "healthy",
-        "model_loaded": True,
+        "model_loaded": model is not None,
         "model_path": str(MODEL_PATH),
     }
 
 
-# =========================================================
+# ============================================================
 # AI PREDICTION
-# =========================================================
+# ============================================================
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-    """
-    Receive one image and detect biomedical waste objects.
-    """
 
-    # -----------------------------------------------------
+    # --------------------------------------------------------
     # Validate file type
-    # -----------------------------------------------------
+    # --------------------------------------------------------
 
     if not file.content_type:
         raise HTTPException(
             status_code=400,
-            detail="File type could not be determined.",
+            detail="File content type is missing.",
         )
 
     if not file.content_type.startswith("image/"):
         raise HTTPException(
             status_code=400,
-            detail="Please upload an image file.",
+            detail="Please upload a valid image file.",
         )
 
     try:
-        # -------------------------------------------------
+
+        # ----------------------------------------------------
         # Read uploaded image
-        # -------------------------------------------------
+        # ----------------------------------------------------
 
         image_bytes = await file.read()
 
@@ -178,29 +161,33 @@ async def predict(file: UploadFile = File(...)):
                 detail="Uploaded image is empty.",
             )
 
-        # -------------------------------------------------
-        # Open image
-        # -------------------------------------------------
+        # ----------------------------------------------------
+        # Open image safely
+        # ----------------------------------------------------
 
         image = Image.open(
             BytesIO(image_bytes)
         ).convert("RGB")
 
-        # -------------------------------------------------
-        # Run YOLO detection
-        # -------------------------------------------------
+        # ----------------------------------------------------
+        # YOLO inference
+        #
+        # 416 image size is intentionally used to reduce
+        # memory usage on Render's 512 MB instance.
+        # ----------------------------------------------------
 
         results = model.predict(
             source=image,
             conf=0.25,
-            imgsz=640,
+            imgsz=416,
             device="cpu",
             verbose=False,
+            max_det=10,
         )
 
-        # -------------------------------------------------
-        # Prepare detections
-        # -------------------------------------------------
+        # ----------------------------------------------------
+        # Process detections
+        # ----------------------------------------------------
 
         detections = []
 
@@ -211,69 +198,60 @@ async def predict(file: UploadFile = File(...)):
 
             for box in result.boxes:
 
-                # Class ID
                 class_id = int(
                     box.cls[0].item()
                 )
 
-                # Confidence
                 confidence = float(
                     box.conf[0].item()
                 )
 
-                # Bounding box
                 xyxy = box.xyxy[0].tolist()
 
-                # Class name
                 class_name = CLASS_NAMES.get(
                     class_id,
-                    f"class_{class_id}",
+                    f"class_{class_id}"
                 )
 
-                # Bin mapping
                 bin_name = BIN_MAPPING.get(
                     class_name,
-                    "Review Required",
+                    "Review Required"
                 )
 
-                # Add detection
                 detections.append(
                     {
                         "item": class_name,
                         "classId": class_id,
-                        "confidence": round(
-                            confidence,
-                            4,
-                        ),
+                        "confidence": confidence,
                         "confidencePercent": round(
                             confidence * 100,
-                            2,
+                            2
                         ),
                         "bin": bin_name,
                         "boundingBox": {
                             "x1": round(
-                                xyxy[0],
-                                2,
+                                float(xyxy[0]),
+                                2
                             ),
                             "y1": round(
-                                xyxy[1],
-                                2,
+                                float(xyxy[1]),
+                                2
                             ),
                             "x2": round(
-                                xyxy[2],
-                                2,
+                                float(xyxy[2]),
+                                2
                             ),
                             "y2": round(
-                                xyxy[3],
-                                2,
+                                float(xyxy[3]),
+                                2
                             ),
                         },
                     }
                 )
 
-        # -------------------------------------------------
-        # Return prediction response
-        # -------------------------------------------------
+        # ----------------------------------------------------
+        # Return successful prediction
+        # ----------------------------------------------------
 
         return {
             "success": True,
@@ -288,10 +266,11 @@ async def predict(file: UploadFile = File(...)):
         raise
 
     except Exception as error:
-        print(
-            "Prediction error:",
-            repr(error),
-        )
+
+        print("========================================")
+        print("Prediction error:")
+        print(str(error))
+        print("========================================")
 
         raise HTTPException(
             status_code=500,
