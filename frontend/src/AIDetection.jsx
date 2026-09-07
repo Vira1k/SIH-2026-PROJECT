@@ -262,22 +262,13 @@ function AIDetection() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      // Render Free services can take a little time to wake up.
-      // Give the AI service up to 120 seconds to respond.
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 120000);
-
-      let response;
-
-      try {
-        response = await fetch(`${AI_API_URL}/predict`, {
-          method: "POST",
-          body: formData,
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timeoutId);
-      }
+      // Send the image directly to the deployed BioTrack-AI service.
+      // No client-side timeout is used because Render Free can take longer
+      // while waking the service or loading the model.
+      const response = await fetch(`${AI_API_URL}/predict`, {
+        method: "POST",
+        body: formData,
+      });
 
       let data = null;
 
